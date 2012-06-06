@@ -12,7 +12,7 @@ def install(path):
     # install_gpu(path)
     install_computational(path)
     install_geospatial(path)
-    install_node(path)
+    # install_node(path)
 
 
 @task
