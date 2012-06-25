@@ -30,7 +30,7 @@ def install_base(path):
     # Install graphical utilities
     sudo('yum -y install libgnome nautilus-open-terminal system-config-firewall vim-X11')
     # Install compilers
-    sudo('yum -y install python-virtualenv gcc gcc-c++ gcc-gfortran make swig hg svn')
+    sudo('yum -y install python-virtualenv gcc gcc-c++ gcc-gfortran make swig Cython hg svn')
     # Clean up
     sudo('yum -y remove aisleriot gnome-games')
     sudo('yum -y update')
@@ -38,7 +38,7 @@ def install_base(path):
     if not exists('%s/bin' % path):
         run('virtualenv %s' % path)
     with prefix('source %s/bin/activate' % path):
-        run('pip install --upgrade coverage Cython distribute fabric nose pylint')
+        run('pip install --upgrade coverage distribute fabric nose pylint')
 
 
 @task
