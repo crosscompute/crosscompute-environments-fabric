@@ -35,8 +35,7 @@ def install_base(path):
     sudo('yum -y remove aisleriot gnome-games')
     sudo('yum -y update')
     # Install packages
-    if not exists('%s/bin' % path):
-        run('virtualenv %s' % path)
+    run('virtualenv %s' % path)
     with prefix('source %s/bin/activate' % path):
         run('pip install --upgrade coverage Cython distribute fabric nose pylint')
 
