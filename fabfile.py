@@ -36,7 +36,7 @@ def install_base(path):
     sudo('yum -y update')
     # Install packages
     if not exists('%s/bin' % path):
-        run('virtualenv %s' % path)
+        run('virtualenv --distribute %s' % path)
     with prefix('source %s/bin/activate' % path):
         run('pip install --upgrade coverage distribute fabric nose pylint')
 
@@ -93,8 +93,10 @@ def install_gpu(path):
 @task
 def install_computational(path):
     install_package(path, 'https://github.com/scikit-learn/scikit-learn.git', yum_install='freetype-devel lcms-devel libjpeg-turbo-devel lyx-fonts tk-devel zlib-devel', pip_install='pyamg')
-    install_package(path, 'https://github.com/statsmodels/statsmodels.git', pip_install='openpyxl pandas python-dateutil pytz xlrd')
-    install_package(path, 'http://networkx.lanl.gov/svn/pygraphviz/trunk', 'pygraphviz', yum_install='graphviz-devel', pip_install='networkx')
+    install_package(path, 'https://github.com/pydata/pandas.git')
+    install_package(path, 'https://github.com/statsmodels/statsmodels.git', pip_install='openpyxl xlrd')
+    install_package(path, 'https://github.com/networkx/networkx.git')
+    install_package(path, 'https://github.com/arruda/pygraphviz.git', yum_install='graphviz-devel')
     install_package(path, 'https://github.com/Theano/Theano.git')
 
 
