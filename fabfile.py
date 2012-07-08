@@ -121,7 +121,8 @@ def install_geospatial(path):
 
 @task
 def install_node(path):
-    install_library(path, 'https://github.com/joyent/node.git', yum_install='openssl-devel')
+    install_library(path, 'https://github.com/joyent/node.git', yum_install='openssl-devel', 
+        customize='git checkout 2134aa3d5c622fc3c3b02ccb713fcde0e0df479a') # Version 0.8.1
     with prefix('source %s/bin/activate' % path):
         run('npm install -g commander expresso node-inspector should socket.io')
 
