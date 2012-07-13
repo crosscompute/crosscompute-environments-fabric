@@ -30,7 +30,7 @@ def install_base(path):
     # Install graphical utilities
     sudo('yum -y install libgnome nautilus-open-terminal system-config-firewall vim-X11')
     # Install compilers
-    sudo('yum -y install python-virtualenv gcc gcc-c++ gcc-gfortran make swig Cython hg svn')
+    sudo('yum -y install python-virtualenv gcc gcc-c++ gcc-gfortran make swig hg svn')
     # Clean up
     sudo('yum -y remove aisleriot gnome-games')
     sudo('yum -y update')
@@ -61,7 +61,7 @@ def install_numerical(path):
     install_package(path, 'https://github.com/numpy/numpy.git', yum_install='atlas-devel atlascpp-devel blas-devel lapack-devel')
     install_package(path, 'https://github.com/scipy/scipy.git')
     install_package(path, 'https://github.com/qsnake/h5py.git', yum_install='hdf5-devel')
-    install_package(path, 'https://github.com/PyTables/PyTables.git', yum_install='bzip2-devel lzo-devel zlib-devel', pip_install='numexpr')
+    install_package(path, 'https://github.com/PyTables/PyTables.git', yum_install='bzip2-devel lzo-devel zlib-devel', pip_install='Cython numexpr')
     install_package(path, 'https://github.com/matplotlib/matplotlib.git', yum_install='freetype-devel libpng-devel tk-devel tkinter')
     install_package(path, 'https://github.com/abate/pydot.git')
 
