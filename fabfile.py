@@ -92,7 +92,7 @@ def install_gpu(path):
 
 @task
 def install_computational(path):
-    # install_package(path, 'http://pyamg.googlecode.com/svn/trunk', 'pyamg', yum_install='suitesparse-devel')
+    install_package(path, 'http://pyamg.googlecode.com/svn/trunk', 'pyamg', yum_install='suitesparse-devel')
     install_package(path, 'https://github.com/scikit-learn/scikit-learn.git', yum_install='freetype-devel lcms-devel libjpeg-turbo-devel lyx-fonts tk-devel zlib-devel')
     install_package(path, 'https://github.com/pydata/pandas.git')
     install_package(path, 'https://github.com/statsmodels/statsmodels.git', pip_install='openpyxl xlrd')
