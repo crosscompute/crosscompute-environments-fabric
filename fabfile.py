@@ -28,7 +28,7 @@ def install_base(path):
         sudo('./setup')
     download(path, 'https://github.com/invisibleroads/scripts.git', customize=customize)
     # Install graphical utilities
-    sudo('yum -y install libgnome nautilus-open-terminal system-config-firewall vim-X11')
+    sudo('yum -y install libgnome nautilus-open-terminal system-config-firewall vim-X11 xcalib')
     # Install compilers
     sudo('yum -y install python-virtualenv gcc gcc-c++ gcc-gfortran make swig hg svn')
     # Clean up
