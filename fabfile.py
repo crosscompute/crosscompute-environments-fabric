@@ -126,7 +126,7 @@ def install_node(path):
         run('git checkout 0544a586ca6b6b900a42e164033dbf350765700a')
     install_library(path, 'https://github.com/joyent/node.git', yum_install='openssl-devel', customize=customize)
     with prefix('source %s/bin/activate' % path):
-        run('npm install -g commander expresso node-inspector should socket.io')
+        run('npm install -g commander expresso http-proxy node-inspector should socket.io')
 
 
 def install_package(path, repositoryURL, repositoryName='', yum_install='', customize=None, pip_install='', setup=''):
