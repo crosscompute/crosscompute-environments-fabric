@@ -28,7 +28,7 @@ def install_base(path):
         sudo('./setup')
     download(path, 'https://github.com/invisibleroads/scripts.git', customize=customize)
     # Install graphical utilities
-    sudo('yum -y install libgnome nautilus-open-terminal system-config-firewall vim-X11')
+    sudo('yum -y install libgnome nautilus-open-terminal system-config-firewall vim-X11 xcalib')
     # Install compilers
     sudo('yum -y install python-virtualenv gcc gcc-c++ gcc-gfortran make swig hg svn')
     # Clean up
@@ -122,8 +122,8 @@ def install_geospatial(path):
 @task
 def install_node(path):
     def customize(repositoryPath):
-        # Checkout v0.8.2
-        run('git checkout cc6084b9ac5cf1d4fe5e7165b71e8fc05d11be1f')
+        # Checkout v0.8.6
+        run('git checkout 0544a586ca6b6b900a42e164033dbf350765700a')
     install_library(path, 'https://github.com/joyent/node.git', yum_install='openssl-devel', customize=customize)
     with prefix('source %s/bin/activate' % path):
         run('npm install -g commander expresso node-inspector should socket.io')
@@ -154,7 +154,7 @@ def install_library(path, repositoryURL, repositoryName='', yum_install='', cust
 def download(path, repositoryURL, repositoryName='', yum_install='', customize=None):
     if repositoryURL.endswith('.git'):
         repositoryClone = 'git clone'
-        repositoryPull = 'git pull'
+        repositoryPull = 'git checkout master; git pull'
     else:
         repositoryClone = 'svn checkout'
         repositoryPull = 'svn update'
