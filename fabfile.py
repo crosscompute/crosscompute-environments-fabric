@@ -122,8 +122,8 @@ def install_geospatial(path):
 @task
 def install_node(path):
     def customize(repositoryPath):
-        # Checkout v0.8.6
-        run('git checkout 0544a586ca6b6b900a42e164033dbf350765700a')
+        # Checkout v0.8.9
+        run('git checkout b88c3902b241cf934e75443b934f2033ad3915b1')
     install_library(path, 'https://github.com/joyent/node.git', yum_install='openssl-devel', customize=customize)
     with prefix('source %s/bin/activate' % path):
         run('npm install -g commander expresso http-proxy node-inspector should socket.io')
