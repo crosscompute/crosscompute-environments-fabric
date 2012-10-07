@@ -41,7 +41,7 @@ def install():
 @task
 def install_base():
     # Install terminal utilities
-    sudo('yum -y install vim-enhanced screen git wget fabric python-virtualenvwrapper')
+    sudo('yum -y install vim-enhanced screen git wget tar unzip fabric python-virtualenvwrapper')
     with virtualenvwrapper():
         run('mkvirtualenv ' + env.virtualenvName)
     # Install scripts
