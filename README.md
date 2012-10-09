@@ -1,6 +1,6 @@
 CrossCompute Scripts
 ====================
-Here is a [fabric](http://docs.fabfile.org) script for preparing a scientific computing environment in [Fedora](http://fedoraproject.org).
+Here are [fabric](http://docs.fabfile.org) scripts for preparing a scientific computing environment in [Fedora](http://fedoraproject.org).
 
     # Add yourself to sudoers
     su
