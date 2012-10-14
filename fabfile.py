@@ -85,6 +85,7 @@ def install_base():
     'Install base applications and packages'
     d = {
         'virtualenv.home': v.home,
+        'virtualenv.path': v.path,
         'user': env.user,
     }
     # Install terminal utilities
