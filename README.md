@@ -52,14 +52,13 @@ Prepare Private CrossCompute AMI.
 
     # Set URI
     AMI_URI=ec2-user@YOUR-ELASTIC-IP
-    AMI_WORKON_HOME=/home/ec2-user/.virtualenvs
     # Install scientific computing environment
-    fab -H $AMI_URI --set virtualenvHome=$AMI_WORKON_HOME
-    fab install_node -H $AMI_URI --set virtualenvHome=$AMI_WORKON_HOME
+    fab -H $AMI_URI
+    fab install_node -H $AMI_URI
     # Backup AMI
 
     # Configure IPython server
-    fab configure_ipython_notebook -H $AMI_URI --set virtualenvHome=$AMI_WORKON_HOME
+    fab configure_ipython_notebook -H $AMI_URI
     # Reboot instance
     # Go to https://YOUR-ELASTIC-IP
     # Go to https://console.aws.amazon.com/ec2
@@ -69,7 +68,7 @@ Prepare Private CrossCompute AMI.
 Prepare Public CrossCompute AMI.
 
     # Clear sensitive information
-        fab prepare_ami -H $AMI_URI --set virtualenvHome=$AMI_WORKON_HOME
+        fab prepare_ami -H $AMI_URI
     # Go to https://console.aws.amazon.com/ec2
     # Stop instance
     # Create image
@@ -98,6 +97,5 @@ Configure IPython server passwords and SSL certificates.
 
     # Set URI
     AMI_URI=ec2-user@YOUR-ELASTIC-IP
-    AMI_WORKON_HOME=/home/ec2-user/.virtualenvs
     # Configure IPython server
-    fab configure_ipython_notebook -H $AMI_URI --set virtualenvHome=$AMI_WORKON_HOME
+    fab configure_ipython_notebook -H $AMI_URI
