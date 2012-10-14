@@ -84,14 +84,14 @@ def install():
 def install_base():
     'Install base applications and packages'
     d = {
-        'virtualenv.path': v.path,
+        'virtualenv.home': v.home,
         'user': env.user,
     }
     # Install terminal utilities
     sudo('yum -y install vim-enhanced screen git wget tar unzip fabric python-virtualenvwrapper')
     sudo('mkdir -p %(virtualenv.path)s/opt' % d)
-    sudo('chown -R %(user)s %(virtualenv.path)s' % d)
-    sudo('chgrp -R %(user)s %(virtualenv.path)s' % d)
+    sudo('chown -R %(user)s %(virtualenv.home)s' % d)
+    sudo('chgrp -R %(user)s %(virtualenv.home)s' % d)
     with virtualenvwrapper():
         run('mkvirtualenv %s' % v.name)
 
