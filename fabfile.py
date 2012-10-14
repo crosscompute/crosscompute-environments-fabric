@@ -44,6 +44,8 @@ SSHD_CONFIG = """
 PermitRootLogin without-password
 PubkeyAuthentication yes
 PasswordAuthentication no
+ChallengeResponseAuthentication no
+UsePAM no
 UseDNS no"""
 
 
@@ -89,7 +91,7 @@ def install_base():
 
     # Install scripts
     def customize(repositoryPath):
-        run("sed -i 's/WORKON_HOME=$HOME\/.virtualenvs/WORKON_HOME=%s/' .bashrc" % v.home.replace('/', '\/'))
+        run(r"sed -i 's/WORKON_HOME=$HOME\/.virtualenvs/WORKON_HOME=%s/' .bashrc" % v.home.replace('/', '\/'))
         run('./setup')
         sudo('./setup')
     download('https://github.com/invisibleroads/scripts.git', customize=customize)
