@@ -98,7 +98,8 @@ def install_base():
 
     # Install scripts
     def customize(repositoryPath):
-        run(r"sed -i 's/WORKON_HOME=$HOME\/.virtualenvs/WORKON_HOME=%s/' .bashrc" % v.home.replace('/', '\/'))
+        run(r"sed -i 's/^WORKON_HOME=$HOME\/.virtualenvs/WORKON_HOME=%s/' .bashrc" % v.home.replace('/', '\/'))
+        run(r"sed -i 's/^workon crosscompute/workon %s/' .bashrc" % v.name)
         run('./setup')
         sudo('./setup')
     download('https://github.com/invisibleroads/scripts.git', customize=customize)
