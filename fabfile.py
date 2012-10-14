@@ -53,7 +53,6 @@ UseDNS no"""
 def virtualenvwrapper():
     commandLines = [
         'export WORKON_HOME=%s' % v.home,
-        'mkdir -p %s/opt' % v.path,
         'source /usr/bin/virtualenvwrapper.sh',
     ]
     with prefix('; '.join(commandLines)):
@@ -84,8 +83,15 @@ def install():
 @task
 def install_base():
     'Install base applications and packages'
+    d = {
+        'virtualenv.path': v.path,
+        'user': env.user,
+    }
     # Install terminal utilities
     sudo('yum -y install vim-enhanced screen git wget tar unzip fabric python-virtualenvwrapper')
+    sudo('mkdir -p %(virtualenv.path)s/opt' % d)
+    sudo('chown -R %(user)s %(virtualenv.path)s' % d)
+    sudo('chgrp -R %(user)s %(virtualenv.path)s' % d)
     with virtualenvwrapper():
         run('mkvirtualenv %s' % v.name)
 
