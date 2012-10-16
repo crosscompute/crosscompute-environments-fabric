@@ -4,19 +4,57 @@ from fabric.api import cd, env, prefix, run, settings, sudo, task
 from fabric.contrib.files import exists
 
 
-normalize_path = lambda path: os.path.abspath(os.path.expanduser(os.path.expandvars(path)))
-env.virtualenvHome = normalize_path(env.get('virtualenvHome', '~/.virtualenvs'))
-env.virtualenvName = env.get('virtualenvName', 'crosscompute')
-env.virtualenvPath = os.path.join(env.virtualenvHome, env.virtualenvName)
-ipythonProfileName = 'server'
+class V(object):
+
+    @property
+    def home(self):
+        return env.get('virtualenv.home', '/home/%s/.virtualenvs' % env.user)
+
+    @property
+    def name(self):
+        return env.get('virtualenv.name', 'crosscompute')
+
+    @property
+    def path(self):
+        return os.path.join(self.home, self.name)
+
+
+v = V()
+IPYTHON_PROFILE_NAME = 'server'
+IPYTHON_NOTEBOOK_CONFIG_PY = """
+# Custom configuration
+c.NotebookApp.certfile = u'%(certificatePath)s'
+c.NotebookApp.open_browser = False
+c.NotebookApp.password = u'%(ipythonPassword)s'
+c.NotebookApp.port = 8888
+c.NotebookApp.port_retries = 0
+c.IPKernelApp.pylab = u'inline'"""
+CRT_PREFIX = '; '.join([
+    'source $VIRTUAL_ENV/bin/activate',
+    'export LD_LIBRARY_PATH=$VIRTUAL_ENV/lib',
+    'export NODE_PATH=$VIRTUAL_ENV/lib/node_modules',
+])
+SERVER_CRT = """\
+VIRTUAL_ENV="%(virtualenv.path)s"
+* * * * * %(crtPrefix)s; cd %(documentFolder)s/crosscompute-tutorials; ipython notebook --profile=server >> %(logPath)s 2>&1"""
+PROXY_CRT = """\
+VIRTUAL_ENV="%(virtualenv.path)s"
+* * * * * %(crtPrefix)s; cd /root; node proxy.js >> proxy.log 2>&1"""
+SSHD_CONFIG = """
+Protocol 2
+PermitRootLogin without-password
+PubkeyAuthentication yes
+PasswordAuthentication no
+ChallengeResponseAuthentication no
+UsePAM no
+UseDNS no"""
 
 
 @contextmanager
 def virtualenvwrapper():
     commandLines = [
-        'export WORKON_HOME=%s' % env.virtualenvHome,
-        'mkdir -p %s/opt' % env.virtualenvPath,
-        'source /usr/bin/virtualenvwrapper.sh' % env,
+        'export WORKON_HOME=%s' % v.home,
+        'source /usr/bin/virtualenvwrapper.sh',
     ]
     with prefix('; '.join(commandLines)):
         yield
@@ -25,7 +63,7 @@ def virtualenvwrapper():
 @contextmanager
 def virtualenv():
     with virtualenvwrapper():
-        with prefix('workon ' + env.virtualenvName):
+        with prefix('workon ' + v.name):
             yield
 
 
@@ -45,13 +83,23 @@ def install():
 @task
 def install_base():
     'Install base applications and packages'
+    d = {
+        'virtualenv.home': v.home,
+        'virtualenv.path': v.path,
+        'user': env.user,
+    }
     # Install terminal utilities
     sudo('yum -y install vim-enhanced screen git wget tar unzip fabric python-virtualenvwrapper')
+    sudo('mkdir -p %(virtualenv.path)s/opt' % d)
+    sudo('chown -R %(user)s %(virtualenv.home)s' % d)
+    sudo('chgrp -R %(user)s %(virtualenv.home)s' % d)
     with virtualenvwrapper():
-        run('mkvirtualenv ' + env.virtualenvName)
+        run('mkvirtualenv %s' % v.name)
 
     # Install scripts
     def customize(repositoryPath):
+        run(r"sed -i 's/^WORKON_HOME=$HOME\/.virtualenvs/WORKON_HOME=%s/' .bashrc" % v.home.replace('/', '\/'))
+        run(r"sed -i 's/^workon crosscompute/workon %s/' .bashrc" % v.name)
         run('./setup')
         sudo('./setup')
     download('https://github.com/invisibleroads/scripts.git', customize=customize)
@@ -171,46 +219,39 @@ def configure_ipython_notebook():
     from IPython.lib import passwd
     ipythonPassword = passwd()
     # Set folders
-    userFolder = run('echo $HOME')
+    userFolder = os.path.join('/home', env.user)
     documentFolder = os.path.join(userFolder, 'Documents')
-    profileFolder = os.path.join(userFolder, '.ipython', 'profile_%s' % ipythonProfileName)
+    profileFolder = os.path.join(userFolder, '.ipython', 'profile_%s' % IPYTHON_PROFILE_NAME)
     securityFolder = os.path.join(profileFolder, 'security')
     # Set paths
     certificatePath = os.path.join(securityFolder, 'ssl.pem')
+    profilePath = os.path.join(profileFolder, 'ipython_notebook_config.py')
     userCrontabPath = os.path.join(profileFolder, 'server.crt')
     logPath = os.path.join(profileFolder, 'log', 'server.log')
     run('rm -Rf %s %s' % (profileFolder, documentFolder))
+    # Prepare dictionary
+    d = {
+        'certificatePath': certificatePath,
+        'ipythonPassword': ipythonPassword,
+        'virtualenv.path': v.path,
+        'crtPrefix': CRT_PREFIX,
+        'documentFolder': documentFolder,
+        'logPath': logPath,
+    }
     # Download documents
     run('mkdir -p %s' % documentFolder)
     with cd(documentFolder):
         run('git clone https://github.com/invisibleroads/crosscompute-tutorials.git')
     # Create profile
     with virtualenv():
-        run('ipython profile create %s' % ipythonProfileName)
+        run('ipython profile create %s' % IPYTHON_PROFILE_NAME)
     # Generate certificate
     with cd(securityFolder):
         run('openssl req -x509 -nodes -days 365 -newkey rsa:1024 -keyout ssl.pem -out ssl.pem')
     # Configure server
-    upload_lines(os.path.join(profileFolder, 'ipython_notebook_config.py'), [
-        "",
-        "# Custom configuration",
-        "c.NotebookApp.certfile = u'%s'" % certificatePath,
-        "c.NotebookApp.open_browser = False",
-        "c.NotebookApp.password = u'%s'" % ipythonPassword,
-        "c.NotebookApp.port = 8888",
-        "c.NotebookApp.port_retries = 0",
-        "c.IPKernelApp.pylab = u'inline'",
-    ], append=True)
+    upload_text(profilePath, IPYTHON_NOTEBOOK_CONFIG_PY % d, append=True)
     # Add crontab
-    upload_lines(userCrontabPath, [
-        "* * * * * %s" % '; '.join([
-            'source %s/bin/activate' % env.virtualenvPath,
-            'export LD_LIBRARY_PATH=%s/lib' % env.virtualenvPath,
-            'export NODE_PATH=%s/lib/node_modules' % env.virtualenvPath,
-            'cd %s/Documents/crosscompute-tutorials' % userFolder,
-            'ipython notebook --profile=server >> %s 2>&1' % logPath,
-        ]),
-    ])
+    upload_text(userCrontabPath, SERVER_CRT % d)
     run('crontab %s' % userCrontabPath)
     # Setup proxy
     configure_proxy()
@@ -223,15 +264,7 @@ def configure_proxy():
     rootCrontabPath = '/root/proxy.crt'
     sudo('cd /root; openssl req -new -newkey rsa:2048 -x509 -days 365 -nodes -out proxy.pem -keyout proxy.key')
     upload_file('/root/proxy.js', sourcePath='proxy.js', su=True)
-    upload_lines(rootCrontabPath, [
-        "* * * * * %s" % '; '.join([
-            'source %s/bin/activate' % env.virtualenvPath,
-            'export LD_LIBRARY_PATH=%s/lib' % env.virtualenvPath,
-            'export NODE_PATH=%s/lib/node_modules' % env.virtualenvPath,
-            'cd /root',
-            'node proxy.js >> proxy.log 2>&1'
-        ]),
-    ], su=True)
+    upload_text(rootCrontabPath, PROXY_CRT % d, su=True)
     sudo('crontab %s' % rootCrontabPath)
 
 
@@ -239,8 +272,8 @@ def configure_proxy():
 def refresh_ami():
     'Clear logs and bash history'
     sudo('yum -y update')
-    userFolder = run('echo $HOME')
-    profileFolder = os.path.join(userFolder, '.ipython', 'profile_%s' % ipythonProfileName)
+    userFolder = os.path.join('/home', env.user)
+    profileFolder = os.path.join(userFolder, '.ipython', 'profile_%s' % IPYTHON_PROFILE_NAME)
     shred = lambda path: sudo('shred %s -fuz' % path)
     with settings(warn_only=True):
         shred(os.path.join(userFolder, '.bash_history'))
@@ -257,15 +290,9 @@ def prepare_ami():
     'Prepare AMI for public release'
     refresh_ami()
     # Use only public key authentication
-    upload_lines('/etc/ssh/sshd_config', [
-        'Protocol 2',
-        'PermitRootLogin without-password',
-        'PubkeyAuthentication yes',
-        'PasswordAuthentication no',
-        'UseDNS no',
-    ], append=True, su=True)
+    upload_text('/etc/ssh/sshd_config', SSHD_CONFIG, append=True, su=True)
     # Remove passwords
-    sudo('passwd -l %s' % run('eval whoami'))
+    sudo('passwd -l %s' % env.user)
     sudo('passwd -l root')
     # Clear sensitive information
     sudo('shred %s -fuz' % ' '.join([
@@ -281,7 +308,7 @@ def prepare_ami():
 
 def install_package(repositoryURL, repositoryName='', yum_install='', customize=None, pip_install='', setup=''):
     repositoryPath = download(repositoryURL, repositoryName, yum_install, customize)
-    setup = setup % dict(path=env.virtualenvPath)
+    setup = setup % dict(path=v.path)
     with virtualenv():
         if pip_install:
             run('pip install --upgrade ' + pip_install)
@@ -293,10 +320,10 @@ def install_package(repositoryURL, repositoryName='', yum_install='', customize=
 
 def install_library(repositoryURL, repositoryName='', yum_install='', customize=None, configure=''):
     repositoryPath = download(repositoryURL, repositoryName, yum_install, customize)
-    configure = configure % dict(path=env.virtualenvPath)
+    configure = configure % dict(path=v.path)
     with virtualenv():
         with cd(repositoryPath):
-            run('./configure --prefix=%s %s' % (env.virtualenvPath, configure))
+            run('./configure --prefix=%s %s' % (v.path, configure))
             run('make install')
 
 
@@ -309,10 +336,10 @@ def download(repositoryURL, repositoryName='', yum_install='', customize=None):
         repositoryPull = 'svn update'
     if not repositoryName:
         repositoryName = os.path.splitext(os.path.basename(repositoryURL))[0].split()[-1]
-    repositoryPath = os.path.join(env.virtualenvPath, 'opt', repositoryName)
+    repositoryPath = os.path.join(v.path, 'opt', repositoryName)
     if yum_install:
         sudo('yum -y install ' + yum_install)
-    with cd('%s/opt' % env.virtualenvPath):
+    with cd('%s/opt' % v.path):
         if not exists(repositoryPath):
             run('%s %s %s' % (repositoryClone, repositoryURL, repositoryName))
     with cd(repositoryPath):
@@ -321,11 +348,14 @@ def download(repositoryURL, repositoryName='', yum_install='', customize=None):
     return repositoryPath
 
 
-def upload_lines(targetPath, lines, append=False, su=False):
+def upload_text(targetPath, text, append=False, su=False):
+    'Note that this will not expand bash variables'
+    text = text.replace('\n', '\\n')       # Replace newlines
+    text = text.replace('\'', '\'"\'"\'')  # Escape single quotes
     command = sudo if su else run
-    command('echo -e "%s" %s %s' % ('\\n'.join(lines), '>>' if append else '>', targetPath))
+    command("echo -e '%s' %s %s" % (text, '>>' if append else '>', targetPath))
 
 
 def upload_file(targetPath, sourcePath, **kw):
-    lines = open(sourcePath, 'rt').read().splitlines()  # readlines() keeps newlines
-    upload_lines(targetPath, lines, **kw)
+    text = open(sourcePath, 'rt').read()
+    upload_text(targetPath, text, **kw)
