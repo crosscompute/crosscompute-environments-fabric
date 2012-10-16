@@ -40,7 +40,6 @@ def install():
     install_computational()
     install_geospatial()
     # install_node()
-    # configure_ipython_notebook()
 
 
 @task
@@ -162,6 +161,7 @@ def install_node():
     install_library('https://github.com/joyent/node.git', yum_install='openssl-devel', customize=customize)
     with virtualenv():
         run('npm install -g commander expresso http-proxy node-inspector should socket.io')
+    run('rm -Rf tmp')
 
 
 @task
@@ -178,7 +178,6 @@ def configure_ipython_notebook():
     # Set paths
     certificatePath = os.path.join(securityFolder, 'ssl.pem')
     userCrontabPath = os.path.join(profileFolder, 'server.crt')
-    rootCrontabPath = '/root/proxy.crt'
     logPath = os.path.join(profileFolder, 'log', 'server.log')
     run('rm -Rf %s %s' % (profileFolder, documentFolder))
     # Download documents
@@ -214,6 +213,14 @@ def configure_ipython_notebook():
     ])
     run('crontab %s' % userCrontabPath)
     # Setup proxy
+    configure_proxy()
+    # Open ports
+    upload_file('/etc/sysconfig/iptables', sourcePath='iptables', su=True)
+
+
+@task
+def configure_proxy():
+    rootCrontabPath = '/root/proxy.crt'
     sudo('cd /root; openssl req -new -newkey rsa:2048 -x509 -days 365 -nodes -out proxy.pem -keyout proxy.key')
     upload_file('/root/proxy.js', sourcePath='proxy.js', su=True)
     upload_lines(rootCrontabPath, [
@@ -226,15 +233,12 @@ def configure_ipython_notebook():
         ]),
     ], su=True)
     sudo('crontab %s' % rootCrontabPath)
-    # Open ports
-    upload_file('/etc/sysconfig/iptables', sourcePath='iptables', su=True)
 
 
 @task
 def refresh_ami():
     'Clear logs and bash history'
     sudo('yum -y update')
-    run('rm -Rf tmp')
     userFolder = run('echo $HOME')
     profileFolder = os.path.join(userFolder, '.ipython', 'profile_%s' % ipythonProfileName)
     shred = lambda path: sudo('shred %s -fuz' % path)
@@ -254,6 +258,7 @@ def prepare_ami():
     refresh_ami()
     # Use only public key authentication
     upload_lines('/etc/ssh/sshd_config', [
+        'Protocol 2',
         'PermitRootLogin without-password',
         'PubkeyAuthentication yes',
         'PasswordAuthentication no',
