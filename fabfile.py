@@ -261,6 +261,10 @@ def configure_ipython_notebook():
 
 @task
 def configure_proxy():
+    d = {
+        'virtualenv.path': v.path,
+        'crtPrefix': CRT_PREFIX,
+    }
     rootCrontabPath = '/root/proxy.crt'
     sudo('cd /root; openssl req -new -newkey rsa:2048 -x509 -days 365 -nodes -out proxy.pem -keyout proxy.key')
     upload_file('/root/proxy.js', sourcePath='proxy.js', su=True)
