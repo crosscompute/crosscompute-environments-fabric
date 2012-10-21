@@ -76,7 +76,8 @@ def install():
     install_numerical()
     # install_gpu()
     install_computational()
-    install_geospatial()
+    install_spatial()
+    install_textual()
     # install_node()
 
 
@@ -112,7 +113,7 @@ def install_base():
     sudo('yum -y update')
     # Install packages
     with virtualenv():
-        run('pip install --upgrade coverage distribute fabric nose pylint')
+        run('pip install --upgrade coverage distribute==0.6.28 fabric nose pylint')
 
 
 @task
@@ -135,6 +136,7 @@ def install_pyramid():
 @task
 def install_numerical():
     'Install numerical packages'
+    sudo('yum -y install GraphicsMagick')
     install_package('https://github.com/numpy/numpy.git', yum_install='atlas-devel atlascpp-devel blas-devel lapack-devel')
     install_package('https://github.com/scipy/scipy.git')
     install_package('https://github.com/qsnake/h5py.git', yum_install='hdf5-devel')
@@ -175,15 +177,15 @@ def install_computational():
     install_package('http://pyamg.googlecode.com/svn/trunk', 'pyamg', yum_install='suitesparse-devel')
     install_package('https://github.com/scikit-learn/scikit-learn.git', yum_install='freetype-devel lcms-devel libjpeg-turbo-devel lyx-fonts tk-devel zlib-devel')
     install_package('https://github.com/pydata/pandas.git')
-    install_package('https://github.com/statsmodels/statsmodels.git', pip_install='openpyxl xlrd')
+    install_package('https://github.com/statsmodels/statsmodels.git', pip_install='openpyxl xlrd patsy')
     install_package('https://github.com/networkx/networkx.git')
     install_package('https://github.com/arruda/pygraphviz.git', yum_install='graphviz-devel')
     install_package('https://github.com/Theano/Theano.git')
 
 
 @task
-def install_geospatial():
-    'Install geospatial packages'
+def install_spatial():
+    'Install spatial packages'
     def customize_proj(repositoryPath):
         fileName = 'proj-datumgrid-1.5.zip'
         if not exists(fileName):
@@ -199,6 +201,12 @@ def install_geospatial():
     install_package('http://pysal.googlecode.com/svn/trunk', 'pysal', yum_install='spatialindex-devel', pip_install='numpydoc rtree')
     with virtualenv():
         run('pip install --upgrade geojson geometryIO')
+
+
+@task
+def install_textual():
+    with virtualenv():
+        run('pip install --upgrade beautifulsoup4')
 
 
 @task
