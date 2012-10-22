@@ -1,0 +1,6 @@
+add rackspace notes
+    create user
+    add user to sudoers
+    change user's password
+    change root's password
+    create ssh key

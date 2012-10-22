@@ -308,7 +308,7 @@ def configure_proxy():
 
 
 @task
-def refresh_ami():
+def refresh_server():
     'Clear logs and history'
     sudo('yum -y update')
     shred = lambda path: sudo('shred %s -fuz' % path)
@@ -323,7 +323,8 @@ def refresh_ami():
 
 
 @task
-def deploy_ami(lockRoot=True, stripPrivileges=True):
+def harden_server(lockRoot=True, stripPrivileges=True):
+    'Harden server security for workshops'
     d = {'notebookFolder': f.notebookFolder}
     # Update notebooks on boot
     upload_text('/etc/rc.d/rc.local', RC_LOCAL % d, su=True)
@@ -340,16 +341,16 @@ def deploy_ami(lockRoot=True, stripPrivileges=True):
     if lockRoot:
         sudo('passwd -l root')
     # Clear logs and history
-    refresh_ami()
+    refresh_server()
     # Strip privileges
     if stripPrivileges:
         sudo(r"sed -i '/^%(user)s[[:space:]]*ALL/d' /etc/sudoers" % env)
 
 
 @task
-def prepare_ami():
-    'Prepare AMI for public release'
-    deploy_ami(stripPrivileges=False)
+def prepare_image():
+    'Prepare image for public release'
+    harden_server(stripPrivileges=False)
     # Clear sensitive information
     sudo('shred %s -fuz' % ' '.join([
         '/etc/ssh/ssh_host_key',

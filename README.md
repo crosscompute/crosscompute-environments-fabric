@@ -65,7 +65,7 @@ Prepare Private CrossCompute AMI.
 Prepare Public CrossCompute AMI.
 
     # Clear sensitive information
-        fab prepare_ami -H $AMI_URI
+        fab prepare_image -H $AMI_URI
     # Go to https://console.aws.amazon.com/ec2
     # Stop instance
     # Create image
@@ -96,6 +96,6 @@ Configure IPython server passwords and SSL certificates.
     AMI_URI=ec2-user@YOUR-ELASTIC-IP
     fab configure_ipython_notebook -H $AMI_URI
 
-Deploy.
+Harden server security for workshops.
 
-    fab deploy_ami -H $AMI_URI
+    fab harden_server -H $AMI_URI
