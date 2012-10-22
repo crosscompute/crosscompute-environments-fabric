@@ -73,11 +73,11 @@ def install():
     install_base()
     install_ipython()
     install_pyramid()
+    install_textual()
     install_numerical()
     # install_gpu()
     install_computational()
     install_spatial()
-    install_textual()
     # install_node()
 
 
@@ -131,6 +131,12 @@ def install_pyramid():
     sudo('yum -y install postgresql postgresql-devel postgresql-server libevent-devel')
     with virtualenv():
         run('pip install --upgrade archiveIO cryptacular formencode imapIO psycopg2 pyramid pyramid_beaker pyramid_debugtoolbar pyramid_mailer pyramid_tm python-openid recaptcha-client simplejson socketIO-client SQLAlchemy transaction waitress webtest whenIO zope.sqlalchemy gevent pika sphinx')
+
+
+@task
+def install_textual():
+    with virtualenv():
+        run('pip install --upgrade beautifulsoup4')
 
 
 @task
@@ -201,12 +207,6 @@ def install_spatial():
     install_package('http://pysal.googlecode.com/svn/trunk', 'pysal', yum_install='spatialindex-devel', pip_install='numpydoc rtree')
     with virtualenv():
         run('pip install --upgrade geojson geometryIO')
-
-
-@task
-def install_textual():
-    with virtualenv():
-        run('pip install --upgrade beautifulsoup4')
 
 
 @task
