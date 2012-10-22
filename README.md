@@ -50,14 +50,11 @@ Associate Elastic IP.
 
 Prepare Private CrossCompute AMI.
 
-    # Set URI
+    cd $CC_SCRIPTS
     AMI_URI=ec2-user@YOUR-ELASTIC-IP
-    # Install scientific computing environment
-    fab -H $AMI_URI
-    fab install_node -H $AMI_URI
+    fab install install_node -H $AMI_URI
     # Backup AMI
 
-    # Configure IPython server
     fab configure_ipython_notebook -H $AMI_URI
     # Reboot instance
     # Go to https://YOUR-ELASTIC-IP
@@ -95,7 +92,10 @@ Associate Elastic IP.
 
 Configure IPython server passwords and SSL certificates.
 
-    # Set URI
+    cd $CC_SCRIPTS
     AMI_URI=ec2-user@YOUR-ELASTIC-IP
-    # Configure IPython server
     fab configure_ipython_notebook -H $AMI_URI
+
+Deploy.
+
+    fab deploy_ami -H $AMI_URI

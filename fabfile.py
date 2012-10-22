@@ -19,7 +19,36 @@ class V(object):
         return os.path.join(self.home, self.name)
 
 
+class F(object):
+
+    @property
+    def userFolder(self):
+        return os.path.join('/home', env.user)
+
+    @property
+    def documentFolder(self):
+        return os.path.join(self.userFolder, 'Documents')
+
+    @property
+    def notebookFolder(self):
+        return os.path.join(self.documentFolder, NOTEBOOK_REPOSITORY_NAME)
+
+    @property
+    def profileFolder(self):
+        return os.path.join(self.userFolder, '.ipython', 'profile_%s' % IPYTHON_PROFILE_NAME)
+
+    @property
+    def securityFolder(self):
+        return os.path.join(self.profileFolder, 'security')
+
+    @property
+    def logPath(self):
+        return os.path.join(self.profileFolder, 'log', 'server.log')
+
+
 v = V()
+f = F()
+NOTEBOOK_REPOSITORY_NAME = 'crosscompute-tutorials'
 IPYTHON_PROFILE_NAME = 'server'
 IPYTHON_NOTEBOOK_CONFIG_PY = """
 # Custom configuration
@@ -36,10 +65,13 @@ CRT_PREFIX = '; '.join([
 ])
 SERVER_CRT = """\
 VIRTUAL_ENV="%(virtualenv.path)s"
-* * * * * %(crtPrefix)s; cd %(documentFolder)s/crosscompute-tutorials; ipython notebook --profile=server >> %(logPath)s 2>&1"""
+* * * * * %(crtPrefix)s; cd %(notebookFolder)s; ipython notebook --profile=%(profileName)s >> %(logPath)s 2>&1"""
 PROXY_CRT = """\
 VIRTUAL_ENV="%(virtualenv.path)s"
 * * * * * %(crtPrefix)s; cd /root; node proxy.js >> proxy.log 2>&1"""
+RC_LOCAL = """\
+#!/bin/sh
+cd %(notebookFolder)s; git pull"""
 SSHD_CONFIG = """
 Protocol 2
 PermitRootLogin without-password
@@ -113,7 +145,7 @@ def install_base():
     sudo('yum -y update')
     # Install packages
     with virtualenv():
-        run('pip install --upgrade coverage distribute==0.6.28 fabric nose pylint')
+        run('pip install --upgrade coverage distribute fabric nose pylint')
 
 
 @task
@@ -226,35 +258,30 @@ def configure_ipython_notebook():
     print 'Please specify a password for your IPython server'
     from IPython.lib import passwd
     ipythonPassword = passwd()
-    # Set folders
-    userFolder = os.path.join('/home', env.user)
-    documentFolder = os.path.join(userFolder, 'Documents')
-    profileFolder = os.path.join(userFolder, '.ipython', 'profile_%s' % IPYTHON_PROFILE_NAME)
-    securityFolder = os.path.join(profileFolder, 'security')
     # Set paths
-    certificatePath = os.path.join(securityFolder, 'ssl.pem')
-    profilePath = os.path.join(profileFolder, 'ipython_notebook_config.py')
-    userCrontabPath = os.path.join(profileFolder, 'server.crt')
-    logPath = os.path.join(profileFolder, 'log', 'server.log')
-    run('rm -Rf %s %s' % (profileFolder, documentFolder))
+    certificatePath = os.path.join(f.securityFolder, 'ssl.pem')
+    profilePath = os.path.join(f.profileFolder, 'ipython_notebook_config.py')
+    userCrontabPath = os.path.join(f.profileFolder, 'server.crt')
+    run('rm -Rf %s %s' % (f.profileFolder, f.notebookFolder))
     # Prepare dictionary
     d = {
         'certificatePath': certificatePath,
         'ipythonPassword': ipythonPassword,
         'virtualenv.path': v.path,
         'crtPrefix': CRT_PREFIX,
-        'documentFolder': documentFolder,
-        'logPath': logPath,
+        'notebookFolder': f.notebookFolder,
+        'profileName': IPYTHON_PROFILE_NAME,
+        'logPath': f.logPath,
     }
     # Download documents
-    run('mkdir -p %s' % documentFolder)
-    with cd(documentFolder):
-        run('git clone https://github.com/invisibleroads/crosscompute-tutorials.git')
+    run('mkdir -p %s' % f.documentFolder)
+    with cd(f.documentFolder):
+        run('git clone https://github.com/invisibleroads/%s.git' % NOTEBOOK_REPOSITORY_NAME)
     # Create profile
     with virtualenv():
         run('ipython profile create %s' % IPYTHON_PROFILE_NAME)
     # Generate certificate
-    with cd(securityFolder):
+    with cd(f.securityFolder):
         run('openssl req -x509 -nodes -days 365 -newkey rsa:1024 -keyout ssl.pem -out ssl.pem')
     # Configure server
     upload_text(profilePath, IPYTHON_NOTEBOOK_CONFIG_PY % d, append=True)
@@ -282,15 +309,13 @@ def configure_proxy():
 
 @task
 def refresh_ami():
-    'Clear logs and bash history'
+    'Clear logs and history'
     sudo('yum -y update')
-    userFolder = os.path.join('/home', env.user)
-    profileFolder = os.path.join(userFolder, '.ipython', 'profile_%s' % IPYTHON_PROFILE_NAME)
     shred = lambda path: sudo('shred %s -fuz' % path)
     with settings(warn_only=True):
-        shred(os.path.join(userFolder, '.bash_history'))
-        shred(os.path.join(profileFolder, 'history.sqlite'))
-        shred(os.path.join(profileFolder, 'log', 'server.log'))
+        shred(os.path.join(f.userFolder, '.bash_history'))
+        shred(os.path.join(f.profileFolder, 'history.sqlite'))
+        shred(f.logPath)
         shred('/root/.bash_history')
         shred('/root/proxy.log')
     sudo('history -c')
@@ -298,14 +323,33 @@ def refresh_ami():
 
 
 @task
-def prepare_ami():
-    'Prepare AMI for public release'
-    refresh_ami()
+def deploy_ami(lockRoot=True, stripPrivileges=True):
+    d = {'notebookFolder': f.notebookFolder}
+    # Update notebooks on boot
+    upload_text('/etc/rc.d/rc.local', RC_LOCAL % d, su=True)
+    sudo('chmod 755 /etc/rc.d/rc.local')
+    # Make notebooks read-only and owned by root
+    sudo('chown -R root %(notebookFolder)s' % d)
+    sudo('chgrp -R root %(notebookFolder)s' % d)
+    sudo('chmod -R 644 %(notebookFolder)s/*' % d)
+    sudo('chmod 755 %(notebookFolder)s' % d)
     # Use only public key authentication
     upload_text('/etc/ssh/sshd_config', SSHD_CONFIG, append=True, su=True)
     # Remove passwords
     sudo('passwd -l %s' % env.user)
-    sudo('passwd -l root')
+    if lockRoot:
+        sudo('passwd -l root')
+    # Clear logs and history
+    refresh_ami()
+    # Strip privileges
+    if stripPrivileges:
+        sudo(r"sed -i '/^%(user)s[[:space:]]*ALL/d' /etc/sudoers" % env)
+
+
+@task
+def prepare_ami():
+    'Prepare AMI for public release'
+    deploy_ami(stripPrivileges=False)
     # Clear sensitive information
     sudo('shred %s -fuz' % ' '.join([
         '/etc/ssh/ssh_host_key',
@@ -315,6 +359,7 @@ def prepare_ami():
         '/etc/ssh/ssh_host_rsa_key',
         '/etc/ssh/ssh_host_rsa_key.pub',
     ]))
+    # Remove SSH keys
     sudo('find /root /home -name authorized_keys | xargs shred -fuz')
 
 

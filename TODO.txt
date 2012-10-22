@@ -1,4 +1,0 @@
-Update tutorials to latest version on instance creation
-Remove ec2-user from sudoers
-Make notebooks read-only and owned by root
-Lock root password
