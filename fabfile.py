@@ -355,12 +355,14 @@ def prepare_image(stripPrivileges=False):
 
 @task
 def prepare_workshop():
-    # Make notebooks read-only and owned by root
     d = {'notebookFolder': f.notebookFolder}
+    # Make notebooks read-only and owned by root
     sudo('chown -R root %(notebookFolder)s' % d)
     sudo('chgrp -R root %(notebookFolder)s' % d)
-    sudo('chmod -R 644 %(notebookFolder)s/*' % d)
-    sudo('chmod 755 %(notebookFolder)s' % d)
+    # Make files readable
+    sudo('find %(notebookFolder)s -type f -exec chmod 644 {} \;' % d)
+    # Make folders executable
+    sudo('find %(notebookFolder)s -type d -exec chmod 755 {} \;' % d)
     # Strip privileges
     prepare_image(stripPrivileges=True)
 
