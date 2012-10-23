@@ -35,16 +35,9 @@ Use Fedora AMI.
     # Search for ami-2ea50247 in Images > AMIs
     # Launch High-CPU Medium instance with open ports 22 and 443
 
-Associate Elastic IP.
+Prepare Server CrossCompute AMI.
 
-    # Go to https://console.aws.amazon.com/ec2
-    # Go to Network & Security > Elastic IPs
-    # Allocate New Address
-    # Associate Address with desired instance
-
-Prepare Private CrossCompute AMI.
-
-    AMI_URI=ec2-user@YOUR-ELASTIC-IP
+    AMI_URI=ec2-user@ec2-YOUR-INSTANCE.compute-XXX.amazonaws.com
     AMI_CERTIFICATE=~/.ssh/YOUR-CERTIFICATE.pem
     CC_SCRIPTS=~/Documents/crosscompute-scripts
 
@@ -61,9 +54,9 @@ Prepare Private CrossCompute AMI.
     # Configure server
     fab configure_ipython_notebook -H $AMI_URI
     # Reboot instance
-    # Go to https://YOUR-ELASTIC-IP
+    # Go to https://ec2-YOUR-INSTANCE.compute-XXX.amazonaws.com
     # Go to https://console.aws.amazon.com/ec2
-    # Create Private CrossCompute AMI
+    # Create Server CrossCompute AMI
 
 Prepare Public CrossCompute AMI.
 
@@ -73,16 +66,32 @@ Prepare Public CrossCompute AMI.
     # Create Public CrossCompute AMI
 
 
-Deploy AMI
-----------
+Use AMI
+-------
 Use CrossCompute AMI.
 
-    # Go to https://console.aws.amazon.com/ec2
-    # Click on Images > AMIs > Public Images
-    # If your region is us-east-1, search for ami-d65fe6bf
-    # If your region is us-west-2, search for ami-bc850c8c
-    # If your region is sa-east-1, search for ami-4221f85f
-    # Launch High-CPU Medium instance with open ports 22 and 443
+    # Go to https://aws.amazon.com/search?searchQuery=crosscompute
+    # Launch a High-CPU Medium instance.
+    # Proceed without a Key Pair.
+    # Create a new Security Group > Add Rule: HTTPS.
+    # Wait a few minutes.
+    # Go to https://ec2-YOUR-INSTANCE.compute-XXX.amazonaws.com
+
+The default IPython Notebook server password is <b>hahaha.com</b>.
+
+
+Customize AMI
+-------------
+Reset IPython server passwords and SSL certificates.
+
+    fab configure_ipython_notebook -H $AMI_URI
+
+
+Teach a workshop with the AMI
+-----------------------------
+Make notebooks read-only for workshops.
+
+    fab prepare_workshop -H $AMI_URI
 
 Associate Elastic IP.
 
@@ -90,22 +99,3 @@ Associate Elastic IP.
     # Go to Network & Security > Elastic IPs
     # Allocate New Address
     # Associate Address with desired instance
-
-Configure IPython server passwords and SSL certificates.
-
-    AMI_URI=ec2-user@YOUR-ELASTIC-IP
-    AMI_CERTIFICATE=~/.ssh/YOUR-CERTIFICATE.pem
-    CC_SCRIPTS=~/Documents/crosscompute-scripts
-
-    # Load SSH certificate
-    chmod 400 $AMI_CERTIFICATE
-    ssh-add $AMI_CERTIFICATE
-    # Enter virtual environment
-    v
-    # Configure server
-    cd $CC_SCRIPTS
-    fab configure_ipython_notebook -H $AMI_URI
-
-Harden server security for workshops (optional).
-
-    fab prepare_workshop -H $AMI_URI
