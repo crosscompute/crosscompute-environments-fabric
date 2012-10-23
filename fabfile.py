@@ -162,7 +162,7 @@ def install_pyramid():
     'Install Pyramid web framework'
     sudo('yum -y install postgresql postgresql-devel postgresql-server libevent-devel')
     with virtualenv():
-        run('pip install --upgrade archiveIO cryptacular formencode imapIO psycopg2 pyramid pyramid_beaker pyramid_debugtoolbar pyramid_mailer pyramid_tm python-openid recaptcha-client simplejson socketIO-client SQLAlchemy transaction waitress webtest whenIO zope.sqlalchemy gevent pika sphinx')
+        run('pip install --upgrade archiveIO cryptacular dogpile.cache formencode imapIO psycopg2 pyramid pyramid_beaker pyramid_debugtoolbar pyramid_mailer pyramid_tm python-openid recaptcha-client simplejson socketIO-client SQLAlchemy transaction waitress webtest whenIO zope.sqlalchemy gevent pika sphinx')
 
 
 @task
