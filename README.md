@@ -78,7 +78,7 @@ Deploy AMI
 Use CrossCompute AMI.
 
     # Go to https://console.aws.amazon.com/ec2
-    # Click on Images > AMIs
+    # Click on Images > AMIs > Public Images
     # If your region is us-east-1, search for ami-d65fe6bf
     # If your region is us-west-2, search for ami-bc850c8c
     # If your region is sa-east-1, search for ami-4221f85f
