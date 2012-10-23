@@ -71,7 +71,7 @@ VIRTUAL_ENV="%(virtualenv.path)s"
 * * * * * %(crtPrefix)s; cd /root; node proxy.js >> proxy.log 2>&1"""
 RC_LOCAL = """\
 #!/bin/sh
-cd %(notebookFolder)s; git pull"""
+cd %(notebookFolder)s; git fetch --all; git reset --hard origin/master"""
 SSHD_CONFIG = """
 Protocol 2
 PermitRootLogin without-password
@@ -253,6 +253,21 @@ def install_node():
 
 
 @task
+def clear_history():
+    'Clear history and logs'
+    sudo('yum -y update')
+    shred = lambda path: sudo('shred %s -fuz' % path)
+    with settings(warn_only=True):
+        shred(os.path.join(f.userFolder, '.bash_history'))
+        shred(os.path.join(f.profileFolder, 'history.sqlite'))
+        shred(f.logPath)
+        shred('/root/.bash_history')
+        shred('/root/proxy.log')
+    sudo('history -c')
+    run('history -c')
+
+
+@task
 def configure_ipython_notebook():
     'Configure IPython Notebook server'
     print 'Please specify a password for your IPython server'
@@ -292,6 +307,11 @@ def configure_ipython_notebook():
     configure_proxy()
     # Open ports
     upload_file('/etc/sysconfig/iptables', sourcePath='iptables', su=True)
+    # Update notebooks on boot
+    upload_text('/etc/rc.d/rc.local', RC_LOCAL % d, su=True)
+    sudo('chmod 755 /etc/rc.d/rc.local')
+    # Clear history
+    clear_history()
 
 
 @task
@@ -308,49 +328,14 @@ def configure_proxy():
 
 
 @task
-def refresh_server():
-    'Clear logs and history'
-    sudo('yum -y update')
-    shred = lambda path: sudo('shred %s -fuz' % path)
-    with settings(warn_only=True):
-        shred(os.path.join(f.userFolder, '.bash_history'))
-        shred(os.path.join(f.profileFolder, 'history.sqlite'))
-        shred(f.logPath)
-        shred('/root/.bash_history')
-        shred('/root/proxy.log')
-    sudo('history -c')
-    run('history -c')
-
-
-@task
-def harden_server(lockRoot=True, stripPrivileges=True):
-    'Harden server security for workshops'
-    d = {'notebookFolder': f.notebookFolder}
-    # Update notebooks on boot
-    upload_text('/etc/rc.d/rc.local', RC_LOCAL % d, su=True)
-    sudo('chmod 755 /etc/rc.d/rc.local')
-    # Make notebooks read-only and owned by root
-    sudo('chown -R root %(notebookFolder)s' % d)
-    sudo('chgrp -R root %(notebookFolder)s' % d)
-    sudo('chmod -R 644 %(notebookFolder)s/*' % d)
-    sudo('chmod 755 %(notebookFolder)s' % d)
+def prepare_image(stripPrivileges=False):
     # Use only public key authentication
     upload_text('/etc/ssh/sshd_config', SSHD_CONFIG, append=True, su=True)
     # Remove passwords
     sudo('passwd -l %s' % env.user)
-    if lockRoot:
-        sudo('passwd -l root')
-    # Clear logs and history
-    refresh_server()
-    # Strip privileges
-    if stripPrivileges:
-        sudo(r"sed -i '/^%(user)s[[:space:]]*ALL/d' /etc/sudoers" % env)
-
-
-@task
-def prepare_image():
-    'Prepare image for public release'
-    harden_server(stripPrivileges=False)
+    sudo('passwd -l root')
+    # Clear history
+    clear_history()
     # Clear sensitive information
     sudo('shred %s -fuz' % ' '.join([
         '/etc/ssh/ssh_host_key',
@@ -360,8 +345,24 @@ def prepare_image():
         '/etc/ssh/ssh_host_rsa_key',
         '/etc/ssh/ssh_host_rsa_key.pub',
     ]))
-    # Remove SSH keys
-    sudo('find /root /home -name authorized_keys | xargs shred -fuz')
+    removeAuthorizedKeys = 'find /root /home -name authorized_keys | xargs shred -fuz'
+    removeSudoerPrivileges = r"sed -i '/^%(user)s[[:space:]]*ALL/d' /etc/sudoers" % env
+    commands = [removeAuthorizedKeys]
+    if stripPrivileges:
+        commands.append(removeSudoerPrivileges)
+    sudo('; '.join(commands))
+
+
+@task
+def prepare_workshop():
+    # Make notebooks read-only and owned by root
+    d = {'notebookFolder': f.notebookFolder}
+    sudo('chown -R root %(notebookFolder)s' % d)
+    sudo('chgrp -R root %(notebookFolder)s' % d)
+    sudo('chmod -R 644 %(notebookFolder)s/*' % d)
+    sudo('chmod 755 %(notebookFolder)s' % d)
+    # Strip privileges
+    prepare_image(stripPrivileges=True)
 
 
 def install_package(repositoryURL, repositoryName='', yum_install='', customize=None, pip_install='', setup=''):

@@ -26,8 +26,6 @@ Prepare host.
     git clone https://github.com/invisibleroads/crosscompute-scripts.git $CC_SCRIPTS
     cd $CC_SCRIPTS
     bash fabfile.sh install_base install_ipython
-    # Enter virtual environment
-    v
 
 Use Fedora AMI.
 
@@ -36,10 +34,6 @@ Use Fedora AMI.
     # Go to https://console.aws.amazon.com/ec2
     # Search for ami-2ea50247 in Images > AMIs
     # Launch High-CPU Medium instance with open ports 22 and 443
-    # Load SSH certificate
-    AMI_CERTIFICATE=~/.ssh/YOUR-CERTIFICATE.pem
-    chmod 400 $AMI_CERTIFICATE
-    ssh-add $AMI_CERTIFICATE
 
 Associate Elastic IP.
 
@@ -50,16 +44,25 @@ Associate Elastic IP.
 
 Prepare Private CrossCompute AMI.
 
-    cd $CC_SCRIPTS
     AMI_URI=ec2-user@YOUR-ELASTIC-IP
-    fab install install_node -H $AMI_URI
-    # Backup AMI
+    AMI_CERTIFICATE=~/.ssh/YOUR-CERTIFICATE.pem
+    CC_SCRIPTS=~/Documents/crosscompute-scripts
 
+    # Load SSH certificate
+    chmod 400 $AMI_CERTIFICATE
+    ssh-add $AMI_CERTIFICATE
+    # Enter virtual environment
+    v
+    # Prepare server
+    cd $CC_SCRIPTS
+    fab install install_node -H $AMI_URI
+    # Create Console CrossCompute AMI
+
+    # Configure server
     fab configure_ipython_notebook -H $AMI_URI
     # Reboot instance
     # Go to https://YOUR-ELASTIC-IP
     # Go to https://console.aws.amazon.com/ec2
-    # Stop image
     # Create Private CrossCompute AMI
 
 Prepare Public CrossCompute AMI.
@@ -67,8 +70,7 @@ Prepare Public CrossCompute AMI.
     # Clear sensitive information
         fab prepare_image -H $AMI_URI
     # Go to https://console.aws.amazon.com/ec2
-    # Stop instance
-    # Create image
+    # Create Public CrossCompute AMI
 
 
 Deploy AMI
@@ -76,12 +78,11 @@ Deploy AMI
 Use CrossCompute AMI.
 
     # Go to https://console.aws.amazon.com/ec2
-    # Search for ami-64f34c0d in Images > AMIs
+    # Click on Images > AMIs
+    # If your region is us-east-1, search for ami-d65fe6bf
+    # If your region is us-west-2, search for ami-bc850c8c
+    # If your region is sa-east-1, search for ami-4221f85f
     # Launch High-CPU Medium instance with open ports 22 and 443
-    # Load SSH certificate
-    AMI_CERTIFICATE=~/.ssh/YOUR-CERTIFICATE.pem
-    chmod 400 $AMI_CERTIFICATE
-    ssh-add $AMI_CERTIFICATE
 
 Associate Elastic IP.
 
@@ -92,10 +93,19 @@ Associate Elastic IP.
 
 Configure IPython server passwords and SSL certificates.
 
-    cd $CC_SCRIPTS
     AMI_URI=ec2-user@YOUR-ELASTIC-IP
+    AMI_CERTIFICATE=~/.ssh/YOUR-CERTIFICATE.pem
+    CC_SCRIPTS=~/Documents/crosscompute-scripts
+
+    # Load SSH certificate
+    chmod 400 $AMI_CERTIFICATE
+    ssh-add $AMI_CERTIFICATE
+    # Enter virtual environment
+    v
+    # Configure server
+    cd $CC_SCRIPTS
     fab configure_ipython_notebook -H $AMI_URI
 
-Harden server security for workshops.
+Harden server security for workshops (optional).
 
-    fab harden_server -H $AMI_URI
+    fab prepare_workshop -H $AMI_URI
