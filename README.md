@@ -75,7 +75,7 @@ Use CrossCompute AMI.
     # Proceed without a Key Pair.
     # Create a new Security Group > Add Rule: HTTPS.
     # Wait a few minutes.
-    # Go to https://ec2-YOUR-INSTANCE.compute-XXX.amazonaws.com
+    # Use a browser that supports websockets (Chrome, Firefox, Safari) and go to https://ec2-YOUR-INSTANCE.compute-XXX.amazonaws.com
 
 The default IPython Notebook server password is <b>hahaha.com</b>.
 
