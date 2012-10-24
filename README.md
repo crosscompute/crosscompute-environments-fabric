@@ -82,7 +82,7 @@ The default IPython Notebook server password is <b>hahaha.com</b>.
 
 Customize AMI
 -------------
-Reset IPython server passwords and SSL certificates.
+Reset IPython Notebook server passwords and SSL certificates.
 
     fab configure_ipython_notebook -H $AMI_URI
 
