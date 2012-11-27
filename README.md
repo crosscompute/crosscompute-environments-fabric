@@ -4,7 +4,7 @@ Here are [fabric](http://docs.fabfile.org) scripts for preparing a scientific co
 
     # Add yourself to sudoers
     su
-        vim /etc/sudoers
+        vi /etc/sudoers
             root          ALL=(ALL) ALL
             YOUR-USERNAME ALL=(ALL) ALL
 
