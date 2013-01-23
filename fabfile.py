@@ -215,7 +215,7 @@ def install_computational():
     install_package('http://pyamg.googlecode.com/svn/trunk', 'pyamg', yum_install='suitesparse-devel')
     install_package('https://github.com/scikit-learn/scikit-learn.git', yum_install='freetype-devel lcms-devel libjpeg-turbo-devel lyx-fonts tk-devel zlib-devel')
     install_package('https://github.com/pydata/pandas.git')
-    install_package('https://github.com/statsmodels/statsmodels.git', pip_install='openpyxl xlrd patsy')
+    install_package('https://github.com/statsmodels/statsmodels.git', pip_install='openpyxl xlrd xlwt patsy')
     install_package('https://github.com/networkx/networkx.git')
     install_package('https://github.com/arruda/pygraphviz.git', yum_install='graphviz-devel')
     install_package('https://github.com/Theano/Theano.git')
