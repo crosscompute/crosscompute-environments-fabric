@@ -144,7 +144,7 @@ def install_base():
     sudo('yum -y update')
     # Install packages
     with virtualenv():
-        run('pip install --upgrade coverage distribute fabric nose pylint')
+        run('pip install --upgrade coverage distribute fabric nose flake8')
 
 
 @task
