@@ -131,10 +131,9 @@ def install_base():
 
     # Install scripts
     def customize(repositoryPath):
-        run(r"sed -i 's/^WORKON_HOME=$HOME\/.virtualenvs/WORKON_HOME=%s/' .bashrc" % v.home.replace('/', '\/'))
-        run(r"sed -i 's/^workon crosscompute/workon %s/' .bashrc" % v.name)
-        run('./setup')
-        sudo('./setup')
+        run(r"sed -i 's/WORKON_HOME=$HOME\/.virtualenvs/WORKON_HOME=%s/' .bashrc" % v.home.replace('/', '\/'))
+        run('./setup %s' % v.name)
+        sudo('./setup %s' % v.name)
     download('https://github.com/invisibleroads/scripts.git', customize=customize)
     # Install graphical utilities
     sudo('yum -y install libgnome nautilus-open-terminal system-config-firewall vim-X11 xcalib')
@@ -145,7 +144,7 @@ def install_base():
     sudo('yum -y update')
     # Install packages
     with virtualenv():
-        run('pip install --upgrade coverage distribute fabric nose pylint')
+        run('pip install --upgrade coverage distribute fabric nose flake8')
 
 
 @task
