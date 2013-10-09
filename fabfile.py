@@ -121,7 +121,7 @@ def install_base():
         'user': env.user,
     }
     # Install terminal utilities
-    sudo('yum -y install vim-enhanced screen git wget tar unzip fabric python-virtualenvwrapper')
+    sudo('yum -y install vim-enhanced tmux git wget tar unzip fabric python-virtualenvwrapper')
     sudo('mkdir -p %(virtualenv.path)s/opt' % d)
     sudo('chown -R %(user)s %(virtualenv.home)s' % d)
     sudo('chgrp -R %(user)s %(virtualenv.home)s' % d)
