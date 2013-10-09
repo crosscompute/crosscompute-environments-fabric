@@ -1,6 +1,7 @@
-add rackspace notes
-    create user
-    add user to sudoers
-    change user's password
-    change root's password
-    create ssh key
+Add rackspace notes
+    Create user
+    Add user to sudoers
+    Change user's password
+    Change root's password
+    Create ssh key
+_ Add pycrytopp

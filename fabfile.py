@@ -107,7 +107,6 @@ def install():
     install_pyramid()
     install_textual()
     install_numerical()
-    # install_gpu()
     install_computational()
     install_spatial()
     # install_node()
@@ -159,9 +158,9 @@ def install_ipython():
 @task
 def install_pyramid():
     'Install Pyramid web framework'
-    sudo('yum -y install postgresql postgresql-devel postgresql-server libevent-devel')
+    sudo('yum -y install postgresql postgresql-devel postgresql-server libevent-devel redis')
     with virtualenv():
-        run('pip install --upgrade archiveIO cryptacular dogpile.cache formencode imapIO psycopg2 pyramid pyramid_beaker pyramid_debugtoolbar pyramid_mailer pyramid_tm python-openid recaptcha-client simplejson socketIO-client SQLAlchemy transaction waitress webtest whenIO zope.sqlalchemy gevent pika sphinx')
+        run('pip install --upgrade archiveIO dogpile.cache formencode imapIO psycopg2 pyramid pyramid_beaker pyramid_debugtoolbar pyramid_mailer pyramid_tm python-openid simplejson socketIO-client sphinx SQLAlchemy transaction velruse waitress webtest whenIO zope.sqlalchemy gevent python-rq')
 
 
 @task
@@ -175,37 +174,11 @@ def install_numerical():
     'Install numerical packages'
     sudo('yum -y install GraphicsMagick')
     install_package('https://github.com/numpy/numpy.git', yum_install='atlas-devel atlascpp-devel blas-devel lapack-devel')
-    install_package('https://github.com/scipy/scipy.git')
+    install_package('https://github.com/scipy/scipy.git', pip_install='Cython')
     install_package('https://github.com/qsnake/h5py.git', yum_install='hdf5-devel')
-    install_package('https://github.com/PyTables/PyTables.git', yum_install='bzip2-devel lzo-devel zlib-devel', pip_install='Cython numexpr')
+    install_package('https://github.com/PyTables/PyTables.git', yum_install='bzip2-devel lzo-devel zlib-devel', pip_install='numexpr')
     install_package('https://github.com/matplotlib/matplotlib.git', yum_install='freetype-devel libpng-devel tk-devel tkinter')
     install_package('https://github.com/abate/pydot.git')
-
-
-@task
-def install_gpu():
-    'Install GPU packages'
-    # workon crosscompute
-    # cd $VIRTUAL_ENV/opt/cuda
-    # wget http://developer.download.nvidia.com/compute/cuda/4_2/rel/drivers/devdriver_4.2_linux_32_295.41.run
-    # wget http://developer.download.nvidia.com/compute/cuda/4_2/rel/toolkit/cudatoolkit_4.2.9_linux_32_fedora14.run
-    # wget http://developer.download.nvidia.com/compute/cuda/4_2/rel/sdk/gpucomputingsdk_4.2.9_linux.run
-    # chmod a+x *
-    # lspci |grep -i VGA
-    # sudo mv /boot/initramfs-$(uname -r).img /boot/initramfs-$(uname -r)-nouveau.img
-    # sudo dracut /boot/initramfs-$(uname -r).img $(uname -r)
-    # sudo yum -y install kernel-devel
-    # sudo init 3
-    # sudo ./devdriver_4.2_linux_32_295.41.run
-    # ./cudatoolkit_4.2.9_linux_32_fedora14.run # $VIRTUAL_ENV/opt
-    # ./gpucomputingsdk_4.2.9_linux.run # $VIRTUAL_ENV/opt/cuda-sdk
-    # sudo yum -y install freeglut-devel libXmu-devel mesa-libGLU-devel libXi-devel
-    def customize(repositoryPath):
-        run('git submodule init')
-        run('git submodule update')
-        run('python configure.py')
-    # install_package('https://github.com/inducer/pyopencl.git', customize=customize)
-    install_package('https://github.com/inducer/pycuda.git', customize=customize)
 
 
 @task
@@ -217,6 +190,7 @@ def install_computational():
     install_package('https://github.com/statsmodels/statsmodels.git', pip_install='openpyxl xlrd xlwt patsy')
     install_package('https://github.com/networkx/networkx.git')
     install_package('https://github.com/arruda/pygraphviz.git', yum_install='graphviz-devel')
+    install_package('https://github.com/sympy/sympy.git')
     install_package('https://github.com/Theano/Theano.git')
 
 
@@ -244,10 +218,10 @@ def install_spatial():
 def install_node():
     'Install node.js server'
     def customize(repositoryPath):
-        run('git checkout d4982f6f5e4a9a703127489a553b8d782997ea43')  # v0.10.3
+        run('git checkout d7234c8d50a1af73f60d2d3c0cc7eed17429a481')  # v0.10.20
     install_library('https://github.com/joyent/node.git', yum_install='openssl-devel', customize=customize)
     with virtualenv():
-        run('npm install -g commander expresso http-proxy node-inspector should socket.io')
+        run('npm install -g commander expresso http-proxy node-inspector should socket.io uglify-js')
     run('rm -Rf tmp')
 
 
