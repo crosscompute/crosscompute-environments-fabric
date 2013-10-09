@@ -162,7 +162,7 @@ def install_pyramid():
 @task
 def install_textual():
     with virtualenv():
-        run('pip install --upgrade beautifulsoup4')
+        run('pip install --upgrade beautifulsoup4 pyparsing')
 
 
 @task
@@ -175,6 +175,9 @@ def install_numerical():
     install_package('https://github.com/PyTables/PyTables.git', yum_install='bzip2-devel lzo-devel zlib-devel', pip_install='numexpr')
     install_package('https://github.com/matplotlib/matplotlib.git', yum_install='freetype-devel libpng-devel tk-devel tkinter', pip_install='pyparsing')
     install_package('https://github.com/abate/pydot.git')
+    install_package('https://github.com/certik/line_profiler.git')
+    with virtualenv():
+        run('pip install --upgrade memory_profiler psutil objgraph')
 
 
 @task
