@@ -73,12 +73,8 @@ RC_LOCAL = """\
 #!/bin/sh
 cd %(notebookFolder)s; git fetch --all; git reset --hard origin/master"""
 SSHD_CONFIG = """
-Protocol 2
 PermitRootLogin without-password
-PubkeyAuthentication yes
 PasswordAuthentication no
-ChallengeResponseAuthentication no
-UsePAM no
 UseDNS no"""
 
 
@@ -109,7 +105,7 @@ def install():
     install_numerical()
     install_computational()
     install_spatial()
-    # install_node()
+    install_node()
 
 
 @task
@@ -210,6 +206,7 @@ def install_spatial():
     install_library('https://svn.osgeo.org/gdal/trunk/gdal', configure='--with-expat=%(path)s --with-python')
     install_package('https://github.com/sgillies/shapely.git', setup='build_ext -I %(path)s/include -L %(path)s/lib -l geos_c')
     install_package('http://pysal.googlecode.com/svn/trunk', 'pysal', yum_install='spatialindex-devel', pip_install='numpydoc rtree')
+    install_package('https://github.com/matplotlib/basemap.git', setup_env='GEOS_DIR=%(path)s')
     with virtualenv():
         run('pip install --upgrade geojson geometryIO')
 
@@ -340,16 +337,18 @@ def prepare_workshop():
     prepare_image(stripPrivileges=True)
 
 
-def install_package(repositoryURL, repositoryName='', yum_install='', customize=None, pip_install='', setup=''):
+def install_package(repositoryURL, repositoryName='', yum_install='', customize=None, pip_install='', setup='', setup_env=''):
     repositoryPath = download(repositoryURL, repositoryName, yum_install, customize)
-    setup = setup % dict(path=v.path)
+    d = dict(path=v.path)
+    setup = setup % d
+    setup_env = setup_env % d
     with virtualenv():
         if pip_install:
             run('pip install --upgrade ' + pip_install)
         with cd(repositoryPath):
             run('||'.join([
-                'python setup.py %s develop' % setup,
-                'python setup.py %s install' % setup]))
+                '%s python setup.py %s develop' % (setup_env, setup),
+                '%s python setup.py %s install' % (setup_env, setup)]))
 
 
 def install_library(repositoryURL, repositoryName='', yum_install='', customize=None, configure=''):
