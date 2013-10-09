@@ -135,7 +135,7 @@ def install_base():
         sudo('./setup %s' % v.name)
     download('https://github.com/invisibleroads/scripts.git', customize=customize)
     # Install graphical utilities
-    sudo('yum -y install libgnome nautilus-open-terminal system-config-firewall vim-X11 xcalib')
+    sudo('yum -y install libgnome nautilus-open-terminal vim-X11 xcalib')
     # Install compilers
     sudo('yum -y install gcc gcc-c++ gcc-gfortran make swig hg svn')
     # Clean up
@@ -177,7 +177,7 @@ def install_numerical():
     install_package('https://github.com/scipy/scipy.git', pip_install='Cython')
     install_package('https://github.com/qsnake/h5py.git', yum_install='hdf5-devel')
     install_package('https://github.com/PyTables/PyTables.git', yum_install='bzip2-devel lzo-devel zlib-devel', pip_install='numexpr')
-    install_package('https://github.com/matplotlib/matplotlib.git', yum_install='freetype-devel libpng-devel tk-devel tkinter')
+    install_package('https://github.com/matplotlib/matplotlib.git', yum_install='freetype-devel libpng-devel tk-devel tkinter', pip_install='pyparsing')
     install_package('https://github.com/abate/pydot.git')
 
 
