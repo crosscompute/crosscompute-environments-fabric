@@ -218,7 +218,7 @@ def install_spatial():
 def install_node():
     'Install node.js server'
     def customize(repositoryPath):
-        run('git checkout d7234c8d50a1af73f60d2d3c0cc7eed17429a481')  # v0.10.20
+        run('git checkout e2da042844a830fafb8031f6c477eb4f96195210')  # v0.10.21
     install_library('https://github.com/joyent/node.git', yum_install='openssl-devel', customize=customize)
     with virtualenv():
         run('npm install -g commander expresso http-proxy node-inspector should socket.io uglify-js')
