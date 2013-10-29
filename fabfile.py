@@ -35,7 +35,10 @@ class F(object):
 
     @property
     def profileFolder(self):
-        return os.path.join(self.userFolder, '.ipython', 'profile_%s' % IPYTHON_PROFILE_NAME)
+        return os.path.join(
+            self.userFolder,
+            '.ipython',
+            'profile_%s' % IPYTHON_PROFILE_NAME)
 
     @property
     def securityFolder(self):
@@ -154,9 +157,10 @@ def install_ipython():
 @task
 def install_pyramid():
     'Install Pyramid web framework'
-    sudo('yum -y install postgresql postgresql-devel postgresql-server libevent-devel redis')
+    sudo('yum -y install postgresql postgresql-devel postgresql-server redis')
+    install_package('https://github.com/surfly/gevent.git', yum_install='libev-devel c-ares-devel')
     with virtualenv():
-        run('pip install --upgrade archiveIO dogpile.cache formencode imapIO psycopg2 pyramid pyramid_beaker pyramid_debugtoolbar pyramid_mailer pyramid_tm python-openid simplejson socketIO-client sphinx SQLAlchemy transaction velruse waitress webtest whenIO zope.sqlalchemy gevent rq')
+        run('pip install --upgrade archiveIO dogpile.cache formencode imapIO psycopg2 pyramid pyramid_debugtoolbar pyramid_mailer pyramid_tm python-openid simplejson sphinx SQLAlchemy transaction velruse waitress webtest whenIO zope.sqlalchemy rq')
 
 
 @task
@@ -264,7 +268,7 @@ def configure_ipython_notebook():
     # Download documents
     run('mkdir -p %s' % f.documentFolder)
     with cd(f.documentFolder):
-        run('git clone https://github.com/invisibleroads/%s.git' % NOTEBOOK_REPOSITORY_NAME)
+        run('git clone --depth=1 https://github.com/invisibleroads/%s.git' % NOTEBOOK_REPOSITORY_NAME)
     # Create profile
     with virtualenv():
         run('ipython profile create %s' % IPYTHON_PROFILE_NAME)
@@ -365,7 +369,7 @@ def install_library(repositoryURL, repositoryName='', yum_install='', customize=
 
 def download(repositoryURL, repositoryName='', yum_install='', customize=None):
     if repositoryURL.endswith('.git'):
-        repositoryClone = 'git clone'
+        repositoryClone = 'git clone --depth=1'
         repositoryPull = 'git checkout master; git pull'
     else:
         repositoryClone = 'svn checkout'
