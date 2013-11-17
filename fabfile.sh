@@ -1,2 +1,2 @@
 sudo service sshd start
-(sudo yum -y install fabric) && fab $@ -H localhost
+(sudo yum -y install fabric) && fab -H localhost $@
