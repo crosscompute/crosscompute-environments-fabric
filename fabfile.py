@@ -120,7 +120,7 @@ def install_base():
         'user': env.user,
     }
     # Install terminal utilities
-    sudo('yum -y install vim-enhanced tmux git wget tar unzip fabric python-virtualenvwrapper')
+    sudo('yum -y install vim-enhanced tmux git wget tar unzip fabric python-virtualenvwrapper aiksaurus')
     sudo('mkdir -p %(virtualenv.path)s/opt' % d)
     sudo('chown -R %(user)s %(virtualenv.home)s' % d)
     sudo('chgrp -R %(user)s %(virtualenv.home)s' % d)
@@ -158,7 +158,6 @@ def install_ipython():
 def install_pyramid():
     'Install Pyramid web framework'
     sudo('yum -y install postgresql postgresql-devel postgresql-server redis')
-    install_package('https://github.com/surfly/gevent.git', yum_install='libev-devel c-ares-devel')
     with virtualenv():
         run('pip install --upgrade archiveIO dogpile.cache formencode imapIO psycopg2 pyramid pyramid_debugtoolbar pyramid_mailer pyramid_tm python-openid simplejson sphinx SQLAlchemy transaction velruse waitress webtest whenIO zope.sqlalchemy rq')
 
@@ -221,9 +220,7 @@ def install_spatial():
 @task
 def install_node():
     'Install node.js server'
-    def customize(repositoryPath):
-        run('git checkout e2da042844a830fafb8031f6c477eb4f96195210')  # v0.10.21
-    install_library('https://github.com/joyent/node.git', yum_install='openssl-devel', customize=customize)
+    install_library('http://nodejs.org/dist/v0.10.22/node-v0.10.22.tar.gz', 'node', yum_install='openssl-devel')
     with virtualenv():
         run('npm install -g commander expresso http-proxy node-inspector should socket.io uglify-js')
     run('rm -Rf tmp')
@@ -368,22 +365,28 @@ def install_library(repositoryURL, repositoryName='', yum_install='', customize=
 
 
 def download(repositoryURL, repositoryName='', yum_install='', customize=None):
-    if repositoryURL.endswith('.git'):
-        repositoryClone = 'git clone --depth=1'
-        repositoryPull = 'git checkout master; git pull'
-    else:
-        repositoryClone = 'svn checkout'
-        repositoryPull = 'svn update'
+    if yum_install:
+        sudo('yum -y install ' + yum_install)
     if not repositoryName:
         repositoryName = os.path.splitext(os.path.basename(repositoryURL))[0].split()[-1]
     repositoryPath = os.path.join(v.path, 'opt', repositoryName)
-    if yum_install:
-        sudo('yum -y install ' + yum_install)
+    if repositoryURL.endswith('.git'):
+        clone = 'git clone --depth=1 %s %s' % (repositoryURL, repositoryName)
+        pull = 'git checkout master; git pull'
+    elif repositoryURL.endswith('.tar.gz'):
+        downloaded_name = os.path.basename(repositoryURL)
+        extracted_name = downloaded_name.replace('.tar.gz', '')
+        clone = 'wget %s; tar xzvf %s; mv %s %s' % (
+            repositoryURL, downloaded_name, extracted_name, repositoryName)
+        pull = ''
+    else:
+        clone = 'svn checkout %s %s' % (repositoryURL, repositoryName)
+        pull = 'svn update'
     with cd('%s/opt' % v.path):
         if not exists(repositoryPath):
-            run('%s %s %s' % (repositoryClone, repositoryURL, repositoryName))
+            run(clone)
     with cd(repositoryPath):
-        run(repositoryPull)
+        pull and run(pull)
         customize and customize(repositoryPath)
     return repositoryPath
 
