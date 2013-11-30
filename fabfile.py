@@ -222,7 +222,7 @@ def install_node():
     'Install node.js server'
     install_library('http://nodejs.org/dist/v0.10.22/node-v0.10.22.tar.gz', 'node', yum_install='openssl-devel')
     with virtualenv():
-        run('npm install -g commander expresso http-proxy node-inspector should socket.io uglify-js')
+        run('npm install -g commander expresso http-proxy node-inspector requirejs should socket.io uglify-js')
     run('rm -Rf tmp')
 
 
