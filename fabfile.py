@@ -128,7 +128,7 @@ def install_base():
         run('mkvirtualenv %s' % v.name)
 
     # Install scripts
-    def customize(repositoryPath):
+    def customize(repository_path):
         run(r"sed -i 's/WORKON_HOME=$HOME\/.virtualenvs/WORKON_HOME=%s/' .bashrc" % v.home.replace('/', '\/'))
         run('./setup %s' % v.name)
         sudo('./setup %s' % v.name)
@@ -199,17 +199,16 @@ def install_computational():
 @task
 def install_spatial():
     'Install spatial packages'
-    def customize_proj(repositoryPath):
+    # Install proj
+    def customize_proj(repository_path):
         fileName = 'proj-datumgrid-1.5.zip'
         if not exists(fileName):
             run('wget http://download.osgeo.org/proj/%s' % fileName)
-            run('unzip -o -d %s %s' % (os.path.join(repositoryPath, 'nad'), fileName))
-    install_library('http://svn.osgeo.org/metacrs/proj/trunk/proj', yum_install='expat-devel', customize=customize_proj)
-
-    def customize_geos(repositoryPath):
-        run('./autogen.sh')
-    install_library('http://svn.osgeo.org/geos/trunk', 'geos', yum_install='autoconf automake libtool', customize=customize_geos, configure='--enable-python')
-    install_library('https://svn.osgeo.org/gdal/trunk/gdal', configure='--with-expat=%(path)s --with-python')
+            run('unzip -o -d %s %s' % (os.path.join(repository_path, 'nad'), fileName))
+    install_library('http://download.osgeo.org/proj/proj-4.8.0.tar.gz', 'proj', yum_install='expat-devel', customize=customize_proj)
+    # Install geos
+    install_library('http://download.osgeo.org/geos/geos-3.4.2.tar.bz2', 'geos', yum_install='autoconf automake libtool', configure='--enable-python')
+    install_library('http://download.osgeo.org/gdal/1.10.1/gdal-1.10.1.tar.gz', 'gdal', configure='--with-expat=%(path)s --with-python')
     install_package('https://github.com/sgillies/shapely.git', setup='build_ext -I %(path)s/include -L %(path)s/lib -l geos_c')
     install_package('http://pysal.googlecode.com/svn/trunk', 'pysal', yum_install='spatialindex-devel', pip_install='numpydoc rtree')
     install_package('https://github.com/matplotlib/basemap.git', setup_env='GEOS_DIR=%(path)s')
@@ -341,54 +340,73 @@ def prepare_workshop():
     prepare_image(stripPrivileges=True)
 
 
-def install_package(repositoryURL, repositoryName='', yum_install='', customize=None, pip_install='', setup='', setup_env=''):
-    repositoryPath = download(repositoryURL, repositoryName, yum_install, customize)
+def install_package(repository_url, repository_name='', yum_install='', customize=None, pip_install='', setup='', setup_env=''):
+    repository_path = download(repository_url, repository_name, yum_install, customize)
     d = dict(path=v.path)
     setup = setup % d
     setup_env = setup_env % d
     with virtualenv():
         if pip_install:
             run('pip install --upgrade ' + pip_install)
-        with cd(repositoryPath):
+        with cd(repository_path):
             run('||'.join([
                 '%s python setup.py %s develop' % (setup_env, setup),
                 '%s python setup.py %s install' % (setup_env, setup)]))
 
 
-def install_library(repositoryURL, repositoryName='', yum_install='', customize=None, configure=''):
-    repositoryPath = download(repositoryURL, repositoryName, yum_install, customize)
+def install_library(
+        repository_url, repository_name='',
+        yum_install='', customize=None, configure=''):
+    repository_path = download(repository_url, repository_name, yum_install, customize)
     configure = configure % dict(path=v.path)
     with virtualenv():
-        with cd(repositoryPath):
+        with cd(repository_path):
             run('./configure --prefix=%s %s' % (v.path, configure))
             run('make install')
 
 
-def download(repositoryURL, repositoryName='', yum_install='', customize=None):
+def download(repository_url, repository_name='', yum_install='', customize=None):
     if yum_install:
         sudo('yum -y install ' + yum_install)
-    if not repositoryName:
-        repositoryName = os.path.splitext(os.path.basename(repositoryURL))[0].split()[-1]
-    repositoryPath = os.path.join(v.path, 'opt', repositoryName)
-    if repositoryURL.endswith('.git'):
-        clone = 'git clone --depth=1 %s %s' % (repositoryURL, repositoryName)
+    if not repository_name:
+        repository_name = os.path.splitext(os.path.basename(repository_url))[0].split()[-1]
+    clone, pull = get_download_commands(repository_url, repository_name)
+    repository_path = os.path.join(v.path, 'opt', repository_name)
+    with cd('%s/opt' % v.path):
+        if not exists(repository_path):
+            run(clone)
+    with cd(repository_path):
+        pull and run(pull)
+        customize and customize(repository_path)
+    return repository_path
+
+
+def get_download_commands(repository_url, repository_name):
+    d = dict(url=repository_url, name=repository_name)
+    if repository_url.endswith('.git'):
+        clone = 'git clone --depth=1 %(url)s %(name)s' % d
         pull = 'git checkout master; git pull --depth=1'
-    elif repositoryURL.endswith('.tar.gz'):
-        downloaded_name = os.path.basename(repositoryURL)
+    elif repository_url.endswith('.tar.gz'):
+        downloaded_name = os.path.basename(repository_url)
         extracted_name = downloaded_name.replace('.tar.gz', '')
-        clone = 'wget %s; tar xzvf %s; mv %s %s' % (
-            repositoryURL, downloaded_name, extracted_name, repositoryName)
+        clone = 'wget %s; tar xzf %s; mv %s %s' % (
+            repository_url, downloaded_name, extracted_name, repository_name)
+        pull = ''
+    elif repository_url.endswith('.tar.bz2'):
+        downloaded_name = os.path.basename(repository_url)
+        extracted_name = downloaded_name.replace('.tar.bz2', '')
+        clone = 'wget %s; tar xjf %s; mv %s %s' % (
+            repository_url, downloaded_name, extracted_name, repository_name)
         pull = ''
     else:
-        clone = 'svn checkout %s %s' % (repositoryURL, repositoryName)
-        pull = 'svn update'
-    with cd('%s/opt' % v.path):
-        if not exists(repositoryPath):
-            run(clone)
-    with cd(repositoryPath):
-        pull and run(pull)
-        customize and customize(repositoryPath)
-    return repositoryPath
+        clone = 'svn checkout %(url)s %(name)s' % d
+        pull = 'svn upgrade; svn update'
+    return clone, pull
+
+
+def upload_file(targetPath, sourcePath, **kw):
+    text = open(sourcePath, 'rt').read()
+    upload_text(targetPath, text, **kw)
 
 
 def upload_text(targetPath, text, append=False, su=False):
@@ -397,8 +415,3 @@ def upload_text(targetPath, text, append=False, su=False):
     text = text.replace('\'', '\'"\'"\'')  # Escape single quotes
     command = sudo if su else run
     command("echo -e '%s' %s %s" % (text, '>>' if append else '>', targetPath))
-
-
-def upload_file(targetPath, sourcePath, **kw):
-    text = open(sourcePath, 'rt').read()
-    upload_text(targetPath, text, **kw)
