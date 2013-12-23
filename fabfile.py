@@ -372,7 +372,7 @@ def download(repositoryURL, repositoryName='', yum_install='', customize=None):
     repositoryPath = os.path.join(v.path, 'opt', repositoryName)
     if repositoryURL.endswith('.git'):
         clone = 'git clone --depth=1 %s %s' % (repositoryURL, repositoryName)
-        pull = 'git checkout master; git pull'
+        pull = 'git checkout master; git pull --depth=1'
     elif repositoryURL.endswith('.tar.gz'):
         downloaded_name = os.path.basename(repositoryURL)
         extracted_name = downloaded_name.replace('.tar.gz', '')
