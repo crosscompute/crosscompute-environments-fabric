@@ -171,16 +171,15 @@ def install_textual():
 @task
 def install_numerical():
     'Install numerical packages'
-    sudo('yum -y install GraphicsMagick')
+    sudo('yum -y install hdf5-devel GraphicsMagick')
     install_package('https://github.com/numpy/numpy.git', yum_install='atlas-devel atlascpp-devel blas-devel lapack-devel')
     install_package('https://github.com/scipy/scipy.git', pip_install='Cython')
-    install_package('https://github.com/qsnake/h5py.git', yum_install='hdf5-devel')
     install_package('https://github.com/PyTables/PyTables.git', yum_install='bzip2-devel lzo-devel zlib-devel', pip_install='numexpr')
     install_package('https://github.com/matplotlib/matplotlib.git', yum_install='freetype-devel libpng-devel tk-devel tkinter', pip_install='pyparsing')
     install_package('https://github.com/abate/pydot.git')
     install_package('https://github.com/certik/line_profiler.git')
     with virtualenv():
-        run('pip install --upgrade memory_profiler psutil objgraph')
+        run('pip install --upgrade h5py memory_profiler psutil objgraph')
 
 
 @task
