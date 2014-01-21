@@ -148,10 +148,12 @@ def install_base():
 @task
 def install_ipython():
     'Install IPython computing environment'
-    install_package('https://github.com/ipython/ipython.git', yum_install='zeromq-devel', pip_install='pyzmq tornado')
+    sudo('yum -y install zeromq-devel')
     with virtualenv():
-        run('ipython -c "from IPython.external.mathjax import install_mathjax; install_mathjax()"')
+        run('pip install --upgrade pyzmq tornado')
+        run('pip install --upgrade ipython')
         run('pip install --upgrade ipdb')
+        run('ipython -c "from IPython.external.mathjax import install_mathjax; install_mathjax()"')
 
 
 @task
