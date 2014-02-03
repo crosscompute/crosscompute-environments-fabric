@@ -185,13 +185,12 @@ def install_numerical():
 @task
 def install_computational():
     'Install computational packages'
-    sudo('yum -y install python-scikit-learn python-networkx graphviz-python')
+    sudo('yum -y install python-scikit-learn python-networkx graphviz-python python-Bottleneck')
     install_package('http://pyamg.googlecode.com/svn/trunk', 'pyamg', yum_install='suitesparse-devel')
-    install_package('https://github.com/statsmodels/statsmodels.git', pip_install='openpyxl xlrd xlwt patsy')
     install_package('https://github.com/Theano/Theano.git')
     install_package('https://github.com/lisa-lab/pylearn2.git')
     with virtualenv():
-        run('pip install --upgrade bottleneck openpyxl xlrd xlwt patsy')
+        run('pip install --upgrade openpyxl xlrd xlwt patsy')
         run('pip install --upgrade statsmodels')
 
 
