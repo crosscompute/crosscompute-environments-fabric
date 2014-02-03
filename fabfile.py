@@ -180,7 +180,7 @@ def install_numerical():
     install_package('https://github.com/PyTables/PyTables.git', yum_install='bzip2-devel lzo-devel zlib-devel', pip_install='numexpr')
     install_package('https://github.com/certik/line_profiler.git')
     with virtualenv():
-        run('pip install --upgrade memory_profiler objgraph')
+        run('pip install --upgrade memory_profiler objgraph pandas')
 
 
 @task
