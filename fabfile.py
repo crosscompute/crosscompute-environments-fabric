@@ -143,7 +143,7 @@ def install_base():
     sudo('yum -y remove aisleriot gnome-games')
     sudo('yum -y update')
     # Install packages
-    sudo('yum -y install python-coverage python-nose python-flake8')
+    sudo('yum -y install python-coverage python-mock python-nose python-flake8')
 
 
 @task
