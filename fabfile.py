@@ -8,11 +8,13 @@ class V(object):
 
     @property
     def home(self):
-        return env.get('virtualenv.home', '/home/%s/.virtualenvs' % env.user)
+        home = os.path.split(env.get('VIRTUAL_ENV', ''))[0]
+        return home or ('/home/%s/.virtualenvs' % env.user)
 
     @property
     def name(self):
-        return env.get('virtualenv.name', 'crosscompute')
+        name = os.path.split(env.get('VIRTUAL_ENV', ''))[1]
+        return name or 'crosscompute'
 
     @property
     def path(self):
@@ -125,7 +127,7 @@ def install_base():
     sudo('chown -R %(user)s %(virtualenv.home)s' % d)
     sudo('chgrp -R %(user)s %(virtualenv.home)s' % d)
     with virtualenvwrapper():
-        run('mkvirtualenv %s' % v.name)
+        run('mkvirtualenv --system-site-packages %s' % v.name)
 
     # Install scripts
     def customize(repository_path):
@@ -141,85 +143,68 @@ def install_base():
     sudo('yum -y remove aisleriot gnome-games')
     sudo('yum -y update')
     # Install packages
-    with virtualenv():
-        run('pip install --upgrade coverage distribute fabric nose flake8')
+    sudo('yum -y install python-coverage python-nose python-flake8')
 
 
 @task
 def install_ipython():
     'Install IPython computing environment'
-    install_package('https://github.com/ipython/ipython.git', yum_install='zeromq-devel', pip_install='pyzmq tornado')
+    sudo('yum -y install ipython python-ipdb')
     with virtualenv():
         run('ipython -c "from IPython.external.mathjax import install_mathjax; install_mathjax()"')
-        run('pip install --upgrade ipdb')
 
 
 @task
 def install_pyramid():
     'Install Pyramid web framework'
-    sudo('yum -y install postgresql postgresql-devel postgresql-server redis')
+    sudo('yum -y install postgresql postgresql-devel postgresql-server python-psycopg2 python-sqlalchemy redis')
+    sudo('yum -y install python-formencode python-simplejson python-sphinx python-transaction python-waitress python-webtest')
     with virtualenv():
-        run('pip install --upgrade archiveIO dogpile.cache formencode imapIO psycopg2 pyramid pyramid_debugtoolbar pyramid_mailer pyramid_tm python-openid simplejson sphinx SQLAlchemy transaction velruse waitress webtest whenIO zope.sqlalchemy rq')
+        run('pip install --upgrade archiveIO dogpile.cache imapIO pyramid pyramid_debugtoolbar pyramid_mailer pyramid_tm python-openid velruse whenIO zope.sqlalchemy rq')
 
 
 @task
 def install_textual():
-    with virtualenv():
-        run('pip install --upgrade beautifulsoup4 pyparsing')
+    sudo('yum -y install python-beautifulsoup4')
 
 
 @task
 def install_numerical():
     'Install numerical packages'
-    sudo('yum -y install GraphicsMagick')
-    install_package('https://github.com/numpy/numpy.git', yum_install='atlas-devel atlascpp-devel blas-devel lapack-devel')
-    install_package('https://github.com/scipy/scipy.git', pip_install='Cython')
-    install_package('https://github.com/qsnake/h5py.git', yum_install='hdf5-devel')
+    sudo('yum -y install Cython GraphicsMagick blosc-devel hdf5 hdf5-devel')
+    sudo('yum -y install numpy scipy python-matplotlib python-pandas sympy h5py pydot python-psutil')
     install_package('https://github.com/PyTables/PyTables.git', yum_install='bzip2-devel lzo-devel zlib-devel', pip_install='numexpr')
-    install_package('https://github.com/matplotlib/matplotlib.git', yum_install='freetype-devel libpng-devel tk-devel tkinter', pip_install='pyparsing')
-    install_package('https://github.com/abate/pydot.git')
     install_package('https://github.com/certik/line_profiler.git')
     with virtualenv():
-        run('pip install --upgrade memory_profiler psutil objgraph')
+        run('pip install --upgrade memory_profiler objgraph')
 
 
 @task
 def install_computational():
     'Install computational packages'
+    sudo('yum -y install python-scikit-learn python-networkx graphviz-python')
     install_package('http://pyamg.googlecode.com/svn/trunk', 'pyamg', yum_install='suitesparse-devel')
-    install_package('https://github.com/scikit-learn/scikit-learn.git', yum_install='freetype-devel lcms-devel libjpeg-turbo-devel lyx-fonts tk-devel zlib-devel')
-    install_package('https://github.com/pydata/pandas.git')
     install_package('https://github.com/statsmodels/statsmodels.git', pip_install='openpyxl xlrd xlwt patsy')
-    install_package('https://github.com/networkx/networkx.git')
-    install_package('https://github.com/arruda/pygraphviz.git', yum_install='graphviz-devel')
-    install_package('https://github.com/sympy/sympy.git')
     install_package('https://github.com/Theano/Theano.git')
+    install_package('https://github.com/lisa-lab/pylearn2.git')
 
 
 @task
 def install_spatial():
     'Install spatial packages'
-    # Install proj
-    def customize_proj(repository_path):
-        fileName = 'proj-datumgrid-1.5.zip'
-        if not exists(fileName):
-            run('wget http://download.osgeo.org/proj/%s' % fileName)
-            run('unzip -o -d %s %s' % (os.path.join(repository_path, 'nad'), fileName))
-    install_library('http://download.osgeo.org/proj/proj-4.8.0.tar.gz', 'proj', yum_install='expat-devel', customize=customize_proj)
-    # Install geos
-    install_library('http://download.osgeo.org/geos/geos-3.4.2.tar.bz2', 'geos', yum_install='autoconf automake libtool', configure='--enable-python')
-    install_library('http://download.osgeo.org/gdal/1.10.1/gdal-1.10.1.tar.gz', 'gdal', configure='--with-expat=%(path)s --with-python')
-    install_package('https://github.com/sgillies/shapely.git', setup='build_ext -I %(path)s/include -L %(path)s/lib -l geos_c')
-    install_package('http://pysal.googlecode.com/svn/trunk', 'pysal', yum_install='spatialindex-devel', pip_install='numpydoc rtree')
-    install_package('https://github.com/matplotlib/basemap.git', setup_env='GEOS_DIR=%(path)s')
+    sudo('yum -y install proj proj-devel proj4-epsg proj4-nad')
+    sudo('yum -y install geos geos-devel geos-python')
+    sudo('yum -y install gdal gdal-devel gdal-python python-shapely')
+    sudo('yum -y install python-basemap python-basemap-data python-basemap-data-hires python-basemap-examples')
+    sudo('yum -y install python-geojson')
     with virtualenv():
-        run('pip install --upgrade geojson geometryIO')
+        run('pip install --upgrade geometryIO')
 
 
 @task
 def install_node():
     'Install node.js server'
-    install_library('http://nodejs.org/dist/v0.10.22/node-v0.10.22.tar.gz', 'node', yum_install='openssl-devel')
+    install_library('http://nodejs.org/dist/v0.10.25/node-v0.10.25.tar.gz', 'node', yum_install='openssl-devel')
     with virtualenv():
         run('npm install -g commander expresso http-proxy node-inspector requirejs should socket.io uglify-js')
     run('rm -Rf tmp')
