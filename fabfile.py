@@ -149,8 +149,11 @@ def install_base():
 @task
 def install_ipython():
     'Install IPython computing environment'
-    sudo('yum -y install ipython python-ipdb')
+    sudo('yum -y install ipython python-ipdb zeromq-devel')
     with virtualenv():
+        run('pip install --upgrade pyzmq tornado')
+        run('pip install --upgrade ipython')
+        run('pip install --upgrade ipdb')
         run('ipython -c "from IPython.external.mathjax import install_mathjax; install_mathjax()"')
 
 
@@ -187,6 +190,9 @@ def install_computational():
     install_package('https://github.com/statsmodels/statsmodels.git', pip_install='openpyxl xlrd xlwt patsy')
     install_package('https://github.com/Theano/Theano.git')
     install_package('https://github.com/lisa-lab/pylearn2.git')
+    with virtualenv():
+        run('pip install --upgrade bottleneck openpyxl xlrd xlwt patsy')
+        run('pip install --upgrade statsmodels')
 
 
 @task
