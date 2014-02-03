@@ -197,7 +197,7 @@ def install_computational():
 @task
 def install_spatial():
     'Install spatial packages'
-    sudo('yum -y install proj proj-devel proj4-epsg proj4-nad')
+    sudo('yum -y install proj proj-devel proj-epsg proj-nad')
     sudo('yum -y install geos geos-devel geos-python')
     sudo('yum -y install gdal gdal-devel gdal-python python-shapely')
     sudo('yum -y install python-basemap python-basemap-data python-basemap-data-hires python-basemap-examples')
