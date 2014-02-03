@@ -160,10 +160,11 @@ def install_ipython():
 @task
 def install_pyramid():
     'Install Pyramid web framework'
-    sudo('yum -y install postgresql postgresql-devel postgresql-server python-psycopg2 python-sqlalchemy redis')
+    sudo('yum -y install pandoc postgresql postgresql-devel postgresql-server python-psycopg2 python-sqlalchemy redis')
     sudo('yum -y install python-formencode python-simplejson python-sphinx python-transaction python-waitress python-webtest')
     with virtualenv():
-        run('pip install --upgrade archiveIO dogpile.cache imapIO pyramid pyramid_debugtoolbar pyramid_mailer pyramid_tm python-openid velruse whenIO zope.sqlalchemy rq')
+        run('pip install --upgrade dogpile.cache pyramid pypandoc velruse zope.sqlalchemy')
+        run('pip install --upgrade archiveIO imapIO pyramid_debugtoolbar pyramid_mailer pyramid_tm python-openid rq voluptuous whenIO')
 
 
 @task
