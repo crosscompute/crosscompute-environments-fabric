@@ -202,9 +202,9 @@ def install_spatial():
     sudo('yum -y install geos geos-devel geos-python')
     sudo('yum -y install gdal gdal-devel gdal-python python-shapely')
     sudo('yum -y install python-basemap python-basemap-data python-basemap-data-hires python-basemap-examples')
-    sudo('yum -y install python-geojson')
+    sudo('yum -y install python-geojson spatialindex-devel')
     with virtualenv():
-        run('pip install --upgrade geometryIO')
+        run('pip install --upgrade geometryIO rtree')
 
 
 @task
