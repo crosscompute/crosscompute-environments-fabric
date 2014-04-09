@@ -175,12 +175,12 @@ def install_textual():
 @task
 def install_numerical():
     'Install numerical packages'
-    sudo('yum -y install Cython GraphicsMagick blosc-devel hdf5 hdf5-devel libjpeg-devel')
+    sudo('yum -y install Cython GraphicsMagick hdf5 hdf5-devel libjpeg-devel')
     sudo('yum -y install numpy scipy python-matplotlib sympy h5py pydot python-psutil')
-    install_package('https://github.com/PyTables/PyTables.git', yum_install='bzip2-devel lzo-devel zlib-devel', pip_install='numexpr')
+    sudo('yum -y install bzip2-devel lzo-devel zlib-devel')
     install_package('https://github.com/certik/line_profiler.git')
     with virtualenv():
-        run('pip install --upgrade memory_profiler objgraph pandas')
+        run('pip install --upgrade memory_profiler objgraph pandas tables')
 
 
 @task
