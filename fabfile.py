@@ -122,7 +122,8 @@ def install_base():
         'user': env.user,
     }
     # Install terminal utilities
-    sudo('yum -y install vim-enhanced tmux git wget tar unzip fabric python-virtualenvwrapper aiksaurus')
+    sudo('yum -y install vim-minimal tmux git deltarpm')
+    sudo('yum -y install wget tar unzip fabric python-virtualenvwrapper which')
     sudo('mkdir -p %(virtualenv.path)s/opt' % d)
     sudo('chown -R %(user)s %(virtualenv.home)s' % d)
     sudo('chgrp -R %(user)s %(virtualenv.home)s' % d)
@@ -140,6 +141,7 @@ def install_base():
     # Install compilers
     sudo('yum -y install gcc gcc-c++ gcc-gfortran make swig hg svn')
     # Clean up
+    sudo('yum -y install aiksaurus')
     sudo('yum -y remove aisleriot gnome-games')
     sudo('yum -y update')
     # Install packages
@@ -177,7 +179,7 @@ def install_numerical():
     'Install numerical packages'
     sudo('yum -y install Cython GraphicsMagick hdf5 hdf5-devel libjpeg-devel')
     sudo('yum -y install numpy scipy python-matplotlib sympy h5py pydot python-psutil')
-    sudo('yum -y install bzip2-devel lzo-devel zlib-devel')
+    sudo('yum -y install python-numexpr bzip2-devel lzo-devel zlib-devel')
     install_package('https://github.com/certik/line_profiler.git')
     with virtualenv():
         run('pip install --upgrade memory_profiler objgraph pandas tables')
