@@ -2,16 +2,17 @@ CrossCompute Scripts
 ====================
 Here are [fabric](http://docs.fabfile.org) scripts for preparing a scientific computing environment in [Fedora](http://fedoraproject.org).
 
-    # Add yourself to sudoers
     su
+        useradd cc
+        passwd cc
         vi /etc/sudoers
             root          ALL=(ALL) ALL
-            YOUR-USERNAME ALL=(ALL) ALL
-
-    # Run script
-    git clone https://github.com/invisibleroads/crosscompute-scripts.git
-    cd crosscompute-scripts
-    bash fabfile.sh | tee crosscompute-scripts.log
+            cc            ALL=(ALL) ALL
+        yum -y install git
+    su cc
+        git clone https://github.com/invisibleroads/crosscompute-scripts.git
+        cd crosscompute-scripts
+        bash fabfile.sh | tee crosscompute-scripts.log
 
 
 Prepare AMI
