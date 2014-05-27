@@ -121,15 +121,22 @@ def install_base():
         'virtualenv.path': v.path,
         'user': env.user,
     }
+    with settings(warn_only=True):
+        sudo("sed -i 's/enabled=0/enabled=1/' /etc/yum.repos.d/epel.repo")
+    sudo('yum -y install vim-minimal tmux git deltarpm python27-devel')
+    sudo('yum -y install wget tar unzip which')
+    with settings(warn_only=True):
+        sudo('rm -rf /usr/lib/python2.7/site-packages/setuptools*')
+    run('wget https://bootstrap.pypa.io/ez_setup.py -O /tmp/ez_setup.py')
+    sudo('python2.7 /tmp/ez_setup.py')
+    sudo('easy_install-2.7 pip')
+    sudo('pip2.7 install --upgrade virtualenvwrapper')
     # Install terminal utilities
-    sudo('yum -y install vim-minimal tmux git deltarpm')
-    sudo('yum -y install wget tar unzip fabric python-virtualenvwrapper which')
     sudo('mkdir -p %(virtualenv.path)s/opt' % d)
     sudo('chown -R %(user)s %(virtualenv.home)s' % d)
     sudo('chgrp -R %(user)s %(virtualenv.home)s' % d)
     with virtualenvwrapper():
-        run('mkvirtualenv --system-site-packages %s' % v.name)
-
+        run('mkvirtualenv --python /usr/bin/python2.7 --system-site-packages %s' % v.name)
     # Install scripts
     def customize(repository_path):
         run(r"sed -i 's/WORKON_HOME=$HOME\/.virtualenvs/WORKON_HOME=%s/' .bashrc" % v.home.replace('/', '\/'))
@@ -137,21 +144,24 @@ def install_base():
         sudo('./setup %s' % v.name)
     download('https://github.com/invisibleroads/scripts.git', customize=customize)
     # Install graphical utilities
-    sudo('yum -y install libgnome nautilus-open-terminal vim-X11 xcalib')
+    with settings(warn_only=True):
+        sudo('yum -y install libgnome nautilus-open-terminal vim-X11 xcalib')
     # Install compilers
     sudo('yum -y install gcc gcc-c++ gcc-gfortran make swig hg svn')
     # Clean up
-    sudo('yum -y install aiksaurus')
-    sudo('yum -y remove aisleriot gnome-games')
+    with settings(warn_only=True):
+        sudo('yum -y install aiksaurus')
+        sudo('yum -y remove aisleriot gnome-games')
     sudo('yum -y update')
     # Install packages
-    sudo('yum -y install python-coverage python-mock python-nose python-flake8')
+    with virtualenv():
+        run('pip install --upgrade coverage mock nose flake8')
 
 
 @task
 def install_ipython():
     'Install IPython computing environment'
-    sudo('yum -y install ipython python-ipdb zeromq-devel')
+    sudo('yum -y install ipython zeromq-devel')
     with virtualenv():
         run('pip install --upgrade pyzmq tornado')
         run('pip install --upgrade ipython')
@@ -162,37 +172,45 @@ def install_ipython():
 @task
 def install_pyramid():
     'Install Pyramid web framework'
-    sudo('yum -y install pandoc postgresql postgresql-devel postgresql-server python-psycopg2 python-sqlalchemy redis')
-    sudo('yum -y install python-formencode python-simplejson python-sphinx python-transaction python-waitress python-webtest')
+    sudo('yum -y install pandoc redis')
     with virtualenv():
+        run('pip install --upgrade sqlalchemy formencode simplejson sphinx transaction waitress webtest')
         run('pip install --upgrade dogpile.cache pyramid pypandoc velruse zope.sqlalchemy')
         run('pip install --upgrade archiveIO imapIO pyramid_debugtoolbar pyramid_mailer pyramid_tm python-openid rq voluptuous whenIO')
 
 
 @task
 def install_textual():
-    sudo('yum -y install python-beautifulsoup4')
+    with virtualenv():
+        run('pip install --upgrade beautifulsoup4')
 
 
 @task
 def install_numerical():
     'Install numerical packages'
-    sudo('yum -y install Cython GraphicsMagick hdf5 hdf5-devel libjpeg-devel')
-    sudo('yum -y install numpy scipy python-matplotlib sympy h5py pydot python-psutil')
-    sudo('yum -y install python-numexpr bzip2-devel lzo-devel zlib-devel')
-    install_package('https://github.com/certik/line_profiler.git')
+    sudo('yum -y install hdf5 hdf5-devel')
+    sudo('yum -y install GraphicsMagick libjpeg-devel libpng-devel')
+    sudo('yum -y install blas-devel lapack-devel')
+    sudo('yum -y install numpy scipy python-matplotlib sympy pydot')
+    sudo('yum -y install freetype-devel bzip2-devel lzo-devel zlib-devel')
     with virtualenv():
-        run('pip install --upgrade memory_profiler objgraph pandas tables')
+        run('pip install --upgrade Cython psutil')
+        run('pip install --upgrade numpy scipy matplotlib numexpr')
+        run('pip install --upgrade pandas h5py tables')
+        run('pip install --upgrade memory_profiler objgraph')
+    with settings(warn_only=True):
+        install_package('https://github.com/certik/line_profiler.git')
 
 
 @task
 def install_computational():
     'Install computational packages'
-    sudo('yum -y install python-scikit-learn python-networkx graphviz-python python-Bottleneck')
+    sudo('yum -y install graphviz-python')
     install_package('http://pyamg.googlecode.com/svn/trunk', 'pyamg', yum_install='suitesparse-devel')
     install_package('https://github.com/Theano/Theano.git')
     install_package('https://github.com/lisa-lab/pylearn2.git')
     with virtualenv():
+        run('pip install --upgrade scikit-learn networkx Bottleneck')
         run('pip install --upgrade openpyxl xlrd xlwt patsy')
         run('pip install --upgrade statsmodels')
 
@@ -200,13 +218,21 @@ def install_computational():
 @task
 def install_spatial():
     'Install spatial packages'
-    sudo('yum -y install proj proj-devel proj-epsg proj-nad')
-    sudo('yum -y install geos geos-devel geos-python')
-    sudo('yum -y install gdal gdal-devel gdal-python python-shapely')
-    sudo('yum -y install python-basemap python-basemap-data python-basemap-data-hires python-basemap-examples')
-    sudo('yum -y install python-geojson spatialindex-devel')
+    # Install proj
+    def customize_proj(repository_path):
+        fileName = 'proj-datumgrid-1.5.zip'
+        if not exists(fileName):
+            run('wget http://download.osgeo.org/proj/%s' % fileName)
+            run('unzip -o -d %s %s' % (os.path.join(repository_path, 'nad'), fileName))
+    install_library('http://download.osgeo.org/proj/proj-4.8.0.tar.gz', 'proj', yum_install='expat-devel', customize=customize_proj)
+    # Install geos
+    install_library('http://download.osgeo.org/geos/geos-3.4.2.tar.bz2', 'geos', yum_install='autoconf automake libtool', configure='--enable-python')
+    install_library('http://download.osgeo.org/gdal/1.11.0/gdal-1.11.0.tar.gz', 'gdal', configure='--with-expat=%(path)s --with-python')
+    install_package('https://github.com/sgillies/shapely.git', setup='build_ext -I %(path)s/include -L %(path)s/lib -l geos_c')
+    install_package('http://pysal.googlecode.com/svn/trunk', 'pysal', yum_install='spatialindex-devel', pip_install='numpydoc rtree')
+    install_package('https://github.com/matplotlib/basemap.git', setup_env='GEOS_DIR=%(path)s')
     with virtualenv():
-        run('pip install --upgrade geometryIO pysal rtree')
+        run('pip install --upgrade geojson geometryIO')
 
 
 @task
