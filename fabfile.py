@@ -87,6 +87,7 @@ UseDNS no"""
 def virtualenvwrapper():
     commandLines = [
         'export WORKON_HOME=%s' % v.home,
+        'export VIRTUALENVWRAPPER_PYTHON=`which python`',
         'source /usr/bin/virtualenvwrapper.sh',
     ]
     with prefix('; '.join(commandLines)):
