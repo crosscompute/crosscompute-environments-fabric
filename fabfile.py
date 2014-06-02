@@ -87,7 +87,6 @@ UseDNS no"""
 def virtualenvwrapper():
     commandLines = [
         'export WORKON_HOME=%s' % v.home,
-        'export VIRTUALENVWRAPPER_PYTHON=`which python`',
         'source /usr/bin/virtualenvwrapper.sh',
     ]
     with prefix('; '.join(commandLines)):
@@ -125,7 +124,7 @@ def install_base():
     with settings(warn_only=True):
         sudo("sed -i 's/enabled=0/enabled=1/' /etc/yum.repos.d/epel.repo")
     sudo('yum -y install vim-minimal tmux git deltarpm python27-devel')
-    sudo('yum -y install wget tar unzip which')
+    sudo('yum -y install wget tar unzip which virtualenvwrapper')
     with settings(warn_only=True):
         sudo('rm -rf /usr/lib/python2.7/site-packages/setuptools*')
     run('wget https://bootstrap.pypa.io/ez_setup.py -O /tmp/ez_setup.py')
