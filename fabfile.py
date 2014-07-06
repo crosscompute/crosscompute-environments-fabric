@@ -193,11 +193,23 @@ def install_numerical():
     sudo('yum -y install blas-devel lapack-devel')
     sudo('yum -y install numpy scipy python-matplotlib sympy pydot')
     sudo('yum -y install freetype-devel bzip2-devel lzo-devel zlib-devel')
+    packages = [
+        'Cython',
+        'psutil',
+        'numpy',
+        'scipy',
+        'matplotlib',
+        'numexpr',
+        'pandas',
+        'h5py',
+        'tables',
+        'memory_profiler',
+        'objgraph',
+    ]
     with virtualenv():
-        run('pip install --upgrade Cython psutil')
-        run('pip install --upgrade numpy scipy matplotlib numexpr')
-        run('pip install --upgrade pandas h5py tables')
-        run('pip install --upgrade memory_profiler objgraph')
+        with settings(warn_only=True):
+            for package in packages:
+                run('pip install --upgrade %s' % package)
     with settings(warn_only=True):
         install_package('https://github.com/certik/line_profiler.git')
 
