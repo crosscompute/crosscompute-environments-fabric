@@ -10,6 +10,7 @@ Here are [fabric](http://docs.fabfile.org) scripts for preparing a scientific co
             cc            ALL=(ALL) ALL
         yum -y install git
     su cc
+        cd
         git clone https://github.com/invisibleroads/crosscompute-scripts.git
         cd crosscompute-scripts
         bash fabfile.sh | tee crosscompute-scripts.log
