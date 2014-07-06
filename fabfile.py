@@ -220,7 +220,7 @@ def install_computational():
     sudo('yum -y install graphviz-python')
     install_package('http://pyamg.googlecode.com/svn/trunk', 'pyamg', yum_install='suitesparse-devel')
     install_package('https://github.com/Theano/Theano.git')
-    install_package('https://github.com/lisa-lab/pylearn2.git')
+    # install_package('https://github.com/lisa-lab/pylearn2.git')
     with virtualenv():
         run('pip install --upgrade scikit-learn networkx Bottleneck')
         run('pip install --upgrade openpyxl xlrd xlwt patsy')
