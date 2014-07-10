@@ -161,7 +161,7 @@ def install_base():
 @task
 def install_ipython():
     'Install IPython computing environment'
-    sudo('yum -y install ipython zeromq-devel')
+    sudo('yum -y install zeromq-devel')
     with virtualenv():
         run('pip install --upgrade pyzmq tornado')
         run('pip install --upgrade ipython')
@@ -219,12 +219,22 @@ def install_computational():
     'Install computational packages'
     sudo('yum -y install graphviz-python')
     install_package('http://pyamg.googlecode.com/svn/trunk', 'pyamg', yum_install='suitesparse-devel')
-    install_package('https://github.com/Theano/Theano.git')
+    # install_package('https://github.com/Theano/Theano.git')
     # install_package('https://github.com/lisa-lab/pylearn2.git')
-    with virtualenv():
-        run('pip install --upgrade scikit-learn networkx Bottleneck')
-        run('pip install --upgrade openpyxl xlrd xlwt patsy')
-        run('pip install --upgrade statsmodels')
+    packages = [
+        'scikit-learn',
+        'networkx',
+        'Bottleneck',
+        'openpyxl',
+        'xlrd',
+        'xlwt',
+        'patsy',
+        'statsmodels',
+    ]
+    with settings(warn_only=True):
+        with virtualenv():
+            for package in packages:
+                run('pip install --upgrade %s' % package)
 
 
 @task
