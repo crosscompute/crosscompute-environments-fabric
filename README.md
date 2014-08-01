@@ -11,9 +11,9 @@ Here are [fabric](http://docs.fabfile.org) scripts for preparing a scientific co
         yum -y install git
     su cc
         cd
-        git clone https://github.com/invisibleroads/crosscompute-scripts.git
-        cd crosscompute-scripts
-        bash fabfile.sh | tee crosscompute-scripts.log
+        git clone https://github.com/invisibleroads/crosscompute-environments.git
+        cd crosscompute-environments
+        bash fabfile.sh | tee crosscompute-environments.log
 
 
 Prepare AMI
@@ -24,8 +24,8 @@ AMI stands for Amazon Machine Image.
 
 Prepare host.
 
-    CC_SCRIPTS=~/Documents/crosscompute-scripts
-    git clone https://github.com/invisibleroads/crosscompute-scripts.git $CC_SCRIPTS
+    CC_SCRIPTS=~/Documents/crosscompute-environments
+    git clone https://github.com/invisibleroads/crosscompute-environments.git $CC_SCRIPTS
     cd $CC_SCRIPTS
     bash fabfile.sh install_base install_ipython
 
@@ -41,7 +41,7 @@ Prepare Server CrossCompute AMI.
 
     AMI_URI=ec2-user@ec2-YOUR-INSTANCE.compute-XXX.amazonaws.com
     AMI_CERTIFICATE=~/.ssh/YOUR-CERTIFICATE.pem
-    CC_SCRIPTS=~/Documents/crosscompute-scripts
+    CC_SCRIPTS=~/Documents/crosscompute-environments
 
     # Load SSH certificate
     chmod 400 $AMI_CERTIFICATE
