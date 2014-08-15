@@ -250,11 +250,11 @@ def install_spatial():
     # Install geos
     install_library('http://download.osgeo.org/geos/geos-3.4.2.tar.bz2', 'geos', yum_install='autoconf automake libtool', configure='--enable-python')
     install_library('http://download.osgeo.org/gdal/1.11.0/gdal-1.11.0.tar.gz', 'gdal', configure='--with-expat=%(path)s --with-python')
-    install_package('https://github.com/sgillies/shapely.git', setup='build_ext -I %(path)s/include -L %(path)s/lib -l geos_c')
+    install_package('https://github.com/Toblerity/Shapely.git', setup='build_ext -I %(path)s/include -L %(path)s/lib -l geos_c')
     install_package('http://pysal.googlecode.com/svn/trunk', 'pysal', yum_install='spatialindex-devel', pip_install='numpydoc rtree')
     install_package('https://github.com/matplotlib/basemap.git', setup_env='GEOS_DIR=%(path)s')
     with virtualenv():
-        run('pip install --upgrade geojson geometryIO')
+        run('pip install --upgrade geojson geometryIO fiona rasterio')
 
 
 @task
