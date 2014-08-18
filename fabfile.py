@@ -131,6 +131,7 @@ def install_base():
     run('wget https://bootstrap.pypa.io/ez_setup.py -O /tmp/ez_setup.py')
     sudo('python2.7 /tmp/ez_setup.py')
     sudo('easy_install-2.7 pip')
+    sudo('rm /home/%s/setuptools-*.zip' % env.user)
     sudo('pip2.7 install --upgrade virtualenvwrapper')
     # Install terminal utilities
     sudo('mkdir -p %(virtualenv.path)s/opt' % d)
