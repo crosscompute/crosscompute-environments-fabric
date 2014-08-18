@@ -110,7 +110,7 @@ def install():
     install_numerical()
     install_computational()
     install_spatial()
-    install_node()
+    # install_node()
 
 
 @task
