@@ -123,7 +123,9 @@ def install_base():
     }
     with settings(warn_only=True):
         sudo("sed -i 's/enabled=0/enabled=1/' /etc/yum.repos.d/epel.repo")
-    sudo('yum -y install vim-minimal tmux git deltarpm python-devel python27-devel')
+    sudo('yum -y remove vim-minimal; yum -y install vim-enhanced')
+    sudo('yum -y install tmux git deltarpm')
+    sudo('yum -y install python-devel python27-devel')
     sudo('yum -y install wget tar unzip bzip2 which python-virtualenvwrapper')
     with settings(warn_only=True):
         sudo('rm -rf /usr/lib/python2.7/site-packages/setuptools*')
