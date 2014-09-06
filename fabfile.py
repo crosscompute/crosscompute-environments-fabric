@@ -87,6 +87,8 @@ UseDNS no"""
 def virtualenvwrapper():
     commandLines = [
         'export WORKON_HOME=%s' % v.home,
+        'export VIRTUALENVWRAPPER_PYTHON=`which python27 || which python2.7`',
+        'export VIRTUALENVWRAPPER_VIRTUALENV=`which virtualenv-2.7`',
         'source /usr/bin/virtualenvwrapper.sh',
     ]
     with prefix('; '.join(commandLines)):
@@ -121,6 +123,7 @@ def install_base():
         'virtualenv.path': v.path,
         'user': env.user,
     }
+    print d
     with settings(warn_only=True):
         sudo("sed -i 's/enabled=0/enabled=1/' /etc/yum.repos.d/epel.repo")
     sudo('yum -y install vim-minimal tmux deltarpm')
@@ -248,13 +251,13 @@ def install_spatial():
         if not exists(fileName):
             run('wget http://download.osgeo.org/proj/%s' % fileName)
             run('unzip -o -d %s %s' % (os.path.join(repository_path, 'nad'), fileName))
-    install_library('http://download.osgeo.org/proj/proj-4.8.0.tar.gz', 'proj', yum_install='expat-devel', customize=customize_proj)
-    # Install geos
-    install_library('http://download.osgeo.org/geos/geos-3.4.2.tar.bz2', 'geos', yum_install='autoconf automake libtool', configure='--enable-python')
-    install_library('http://download.osgeo.org/gdal/1.11.0/gdal-1.11.0.tar.gz', 'gdal', configure='--with-expat=%(path)s --with-python')
-    install_package('https://github.com/Toblerity/Shapely.git', setup='build_ext -I %(path)s/include -L %(path)s/lib -l geos_c')
-    install_package('http://pysal.googlecode.com/svn/trunk', 'pysal', yum_install='spatialindex-devel', pip_install='numpydoc rtree')
-    install_package('https://github.com/matplotlib/basemap.git', setup_env='GEOS_DIR=%(path)s')
+    install_library('http://download.osgeo.org/proj/proj-4.8.0.tar.gz', 'proj', yum_install='expat-devel', customize=customize_proj, globally=True)
+    install_library('http://download.osgeo.org/geos/geos-3.4.2.tar.bz2', 'geos', yum_install='autoconf automake libtool', configure='--enable-python', globally=True)
+    install_library('http://download.osgeo.org/gdal/1.11.0/gdal-1.11.0.tar.gz', 'gdal', configure='--with-expat=%(path)s --with-python', globally=True)
+    install_library('http://download.osgeo.org/libspatialindex/spatialindex-src-1.8.1.tar.gz', 'spatialindex', globally=True)
+    install_package('https://github.com/Toblerity/Shapely.git', 'shapely')
+    install_package('http://pysal.googlecode.com/svn/trunk', 'pysal', pip_install='numpydoc rtree')
+    install_package('https://github.com/matplotlib/basemap.git')
     with virtualenv():
         run('pip install --upgrade geojson geometryIO fiona rasterio')
 
@@ -399,13 +402,18 @@ def install_package(repository_url, repository_name='', yum_install='', customiz
 
 def install_library(
         repository_url, repository_name='',
-        yum_install='', customize=None, configure=''):
+        yum_install='', customize=None, configure='', globally=False):
     repository_path = download(repository_url, repository_name, yum_install, customize)
     configure = configure % dict(path=v.path)
     with virtualenv():
         with cd(repository_path):
-            run('./configure --prefix=%s %s' % (v.path, configure))
-            run('make install')
+            # run('make clean')
+            if globally:
+                run('./configure %s' % configure)
+                sudo('make install')
+            else:
+                run('./configure --prefix=%s %s' % (v.path, configure))
+                run('make install')
 
 
 def download(repository_url, repository_name='', yum_install='', customize=None):
