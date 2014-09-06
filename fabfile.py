@@ -152,7 +152,7 @@ def install_base():
     with settings(warn_only=True):
         sudo('yum -y install libgnome nautilus-open-terminal vim-X11 xcalib')
     # Install compilers
-    sudo('yum -y install gcc gcc-c++ gcc-gfortran make swig hg svn')
+    sudo('yum -y install gcc gcc-c++ gcc-gfortran make libtool swig hg svn')
     # Clean up
     with settings(warn_only=True):
         sudo('yum -y install aiksaurus')
@@ -166,7 +166,9 @@ def install_base():
 @task
 def install_ipython():
     'Install IPython computing environment'
-    sudo('yum -y install zeromq-devel')
+    def customize_zmq(repository_path):
+        run('bash autogen.sh')
+    install_library('https://github.com/zeromq/libzmq.git', 'zmq', customize=customize_zmq, globally=True)
     with virtualenv():
         run('pip install --upgrade pyzmq tornado')
         run('pip install --upgrade ipython')
@@ -410,6 +412,7 @@ def install_library(
             # run('make clean')
             if globally:
                 run('./configure %s' % configure)
+                run('make')
                 sudo('make install')
             else:
                 run('./configure --prefix=%s %s' % (v.path, configure))
