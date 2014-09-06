@@ -126,7 +126,7 @@ def install_base():
     print d
     with settings(warn_only=True):
         sudo("sed -i 's/enabled=0/enabled=1/' /etc/yum.repos.d/epel.repo")
-    sudo('yum -y install vim-minimal tmux deltarpm')
+    sudo('yum -y install tmux deltarpm')
     sudo('yum -y install git wget tar unzip bzip2 which')
     sudo('yum -y install python-devel python27-devel python-virtualenvwrapper')
     with settings(warn_only=True):
@@ -159,6 +159,7 @@ def install_base():
         sudo('yum -y remove aisleriot gnome-games')
     sudo('yum -y update')
     # Install packages
+    sudo('yum -y install vim-enhanced')
     with virtualenv():
         run('pip install --upgrade coverage mock nose flake8')
 
