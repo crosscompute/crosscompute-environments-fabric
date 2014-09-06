@@ -148,6 +148,7 @@ def install_base():
         run('./setup %s' % v.name)
         sudo('./setup %s' % v.name)
     download('https://github.com/invisibleroads/scripts.git', customize=customize)
+    sudo('yum -y update')
     # Install graphical utilities
     with settings(warn_only=True):
         sudo('yum -y install libgnome nautilus-open-terminal vim-X11 xcalib')
@@ -157,11 +158,10 @@ def install_base():
     with settings(warn_only=True):
         sudo('yum -y install aiksaurus')
         sudo('yum -y remove aisleriot gnome-games')
-    sudo('yum -y update')
     # Install packages
-    sudo('yum -y install vim-enhanced')
     with virtualenv():
         run('pip install --upgrade coverage mock nose flake8')
+    sudo('yum -y install vim-enhanced')
 
 
 @task
