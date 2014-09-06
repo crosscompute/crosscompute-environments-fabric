@@ -8,12 +8,12 @@ class V(object):
 
     @property
     def home(self):
-        home = os.path.split(os.getenv('VIRTUAL_ENV', ''))[0]
+        home = os.path.split(os.getenv('ENV', ''))[0]
         return home or ('/home/%s/.virtualenvs' % env.user)
 
     @property
     def name(self):
-        name = os.path.split(os.getenv('VIRTUAL_ENV', ''))[1]
+        name = os.path.split(os.getenv('ENV', ''))[1]
         return name or 'crosscompute'
 
     @property
