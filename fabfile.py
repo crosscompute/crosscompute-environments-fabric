@@ -38,9 +38,7 @@ class F(object):
     @property
     def profileFolder(self):
         return os.path.join(
-            self.userFolder,
-            '.ipython',
-            'profile_%s' % IPYTHON_PROFILE_NAME)
+            self.userFolder, '.ipython', 'profile_%s' % IPYTHON_PROFILE_NAME)
 
     @property
     def securityFolder(self):
@@ -127,8 +125,9 @@ def install_base():
     print d
     with settings(warn_only=True):
         sudo("sed -i 's/enabled=0/enabled=1/' /etc/yum.repos.d/epel.repo")
-    sudo('yum -y install tmux deltarpm')
-    sudo('yum -y install git wget tar unzip bzip2 which')
+    sudo('yum -y install deltarpm')
+    sudo('yum -y install tmux git')
+    sudo('yum -y install wget tar unzip bzip2 which at')
     sudo('yum -y install python-devel python27-devel python-virtualenvwrapper')
     with settings(warn_only=True):
         sudo('rm -rf /usr/lib/python2.7/site-packages/setuptools*')
