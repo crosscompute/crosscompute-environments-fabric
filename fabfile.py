@@ -196,7 +196,7 @@ def install_textual():
 @task
 def install_numerical():
     'Install numerical packages'
-    def customize_zmq(repository_path):
+    def customize_freetype(repository_path):
         run('bash autogen.sh')
     install_library('http://download.savannah.gnu.org/releases/freetype/freetype-2.5.3.tar.gz', 'freetype', customize=customize_freetype, globally=True)
     sudo('yum -y install hdf5 hdf5-devel')
