@@ -259,7 +259,7 @@ def install_spatial():
             run('unzip -o -d %s %s' % (os.path.join(repository_path, 'nad'), fileName))
     install_library('http://download.osgeo.org/proj/proj-4.8.0.tar.gz', 'proj', yum_install='expat-devel', customize=customize_proj, globally=True)
     install_library('http://download.osgeo.org/geos/geos-3.4.2.tar.bz2', 'geos', yum_install='autoconf automake libtool', configure='--enable-python', globally=True)
-    install_library('http://download.osgeo.org/gdal/1.11.0/gdal-1.11.0.tar.gz', 'gdal', configure='--with-expat=%(path)s --with-python', globally=True)
+    install_library('http://download.osgeo.org/gdal/1.11.1/gdal-1.11.1.tar.gz', 'gdal', configure='--with-expat=%(path)s --with-python', globally=True)
     install_library('http://download.osgeo.org/libspatialindex/spatialindex-src-1.8.1.tar.gz', 'spatialindex', globally=True)
     sudo('chown %s %s/lib/python2.7/site-packages/easy-install.pth' % (env.user, v.path))
     sudo('chgrp %s %s/lib/python2.7/site-packages/easy-install.pth' % (env.user, v.path))
