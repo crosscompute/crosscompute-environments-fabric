@@ -267,7 +267,7 @@ def install_spatial():
     install_package('http://pysal.googlecode.com/svn/trunk', 'pysal', pip_install='numpydoc rtree')
     install_package('https://github.com/matplotlib/basemap.git')
     with virtualenv():
-        run('pip install --upgrade geojson geometryIO fiona rasterio')
+        run('pip install --upgrade geojson geometryIO fiona rasterio pykdtree')
 
 
 @task
