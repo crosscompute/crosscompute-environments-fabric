@@ -185,6 +185,7 @@ def install_pyramid():
         run('pip install --upgrade sqlalchemy formencode simplejson sphinx transaction waitress webtest')
         run('pip install --upgrade dogpile.cache pyramid pypandoc velruse zope.sqlalchemy')
         run('pip install --upgrade archiveIO imapIO pyramid_debugtoolbar pyramid_mailer pyramid_tm python-openid rq voluptuous whenIO')
+        run('pip install --upgrade bleach markdown flask')
 
 
 @task
