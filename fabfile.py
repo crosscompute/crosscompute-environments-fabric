@@ -197,9 +197,9 @@ def install_textual():
 @task
 def install_numerical():
     'Install numerical packages'
-    def customize_freetype(repository_path):
-        run('bash autogen.sh')
-    install_library('http://download.savannah.gnu.org/releases/freetype/freetype-2.5.3.tar.gz', 'freetype', customize=customize_freetype, globally=True)
+    # def customize_freetype(repository_path):
+        # run('bash autogen.sh')
+    # install_library('http://download.savannah.gnu.org/releases/freetype/freetype-2.5.3.tar.gz', 'freetype', customize=customize_freetype, globally=True)
     sudo('yum -y install hdf5 hdf5-devel')
     sudo('yum -y install GraphicsMagick libjpeg-devel libpng-devel')
     sudo('yum -y install blas-devel lapack-devel')
