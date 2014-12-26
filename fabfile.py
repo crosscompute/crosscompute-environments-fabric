@@ -161,7 +161,7 @@ def install_base():
     # Install packages
     with virtualenv():
         run('pip install --upgrade coverage mock nose flake8')
-    sudo('yum -y install vim-enhanced')
+    sudo('yum -y install vim-enhanced expect')
 
 
 @task
