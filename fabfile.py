@@ -169,7 +169,7 @@ def install_ipython():
     'Install IPython computing environment'
     def customize_zmq(repository_path):
         run('bash autogen.sh')
-    install_library('https://github.com/zeromq/libzmq.git', 'zmq', customize=customize_zmq, globally=True)
+    install_library('https://github.com/zeromq/libzmq.git', 'zmq', yum_install='libsodium-devel', customize=customize_zmq, globally=True)
     with virtualenv():
         run('pip install --upgrade pyzmq tornado')
         run('pip install --upgrade ipython')
