@@ -175,6 +175,9 @@ def install_ipython():
         run('pip install --upgrade ipython')
         run('pip install --upgrade ipdb')
         run('ipython -c "from IPython.external.mathjax import install_mathjax; install_mathjax()"')
+    # with cd('%s/opt' % v.path):
+        # run('git clone --depth=1 git@github.com:nsonnad/base16-ipython-notebook.git')
+        # run('ln -sf %s/opt/base16-ipython-notebook/base16-default-dark.css ~/.ipython/profile_default/static/custom/custom.css' % v.path)
 
 
 @task
