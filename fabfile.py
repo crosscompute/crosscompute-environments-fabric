@@ -277,7 +277,7 @@ def install_spatial():
 @task
 def install_node():
     'Install node.js server'
-    install_library('http://nodejs.org/dist/v0.10.33/node-v0.10.33.tar.gz', 'node', yum_install='openssl-devel')
+    install_library('http://nodejs.org/dist/v0.12.0/node-v0.12.0.tar.gz', 'node', yum_install='openssl-devel')
     with virtualenv():
         run('npm install -g commander expresso http-proxy node-inspector requirejs should socket.io uglify-js')
     run('rm -Rf tmp')
