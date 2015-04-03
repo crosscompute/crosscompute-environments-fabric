@@ -207,7 +207,8 @@ def install_numerical():
     sudo('yum -y install GraphicsMagick libjpeg-devel libpng-devel')
     sudo('yum -y install blas-devel lapack-devel')
     sudo('yum -y install numpy scipy python-matplotlib sympy pydot')
-    sudo('yum -y install freetype-devel bzip2-devel lzo-devel zlib-devel')
+    sudo('yum -y install freetype-devel')
+    sudo('yum -y install snappy-devel bzip2-devel lzo-devel zlib-devel')
     packages = [
         'Cython',
         'psutil',
@@ -215,7 +216,7 @@ def install_numerical():
         'scipy',
         'matplotlib',
         'numexpr',
-        'pandas',
+        'blosc', 'python-snappy', 'lz4', 'pandas',
         'pillow',
         'h5py',
         'openpyxl',
