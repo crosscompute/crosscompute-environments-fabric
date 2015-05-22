@@ -142,6 +142,7 @@ def install_base():
     sudo('chgrp -R %(user)s %(virtualenv.home)s' % d)
     with virtualenvwrapper():
         run('mkvirtualenv --python /usr/bin/python2.7 --system-site-packages %s' % v.name)
+
     # Install scripts
     def customize(repository_path):
         run(r"sed -i 's/WORKON_HOME=$HOME\/.virtualenvs/WORKON_HOME=%s/' .bashrc" % v.home.replace('/', '\/'))
@@ -200,9 +201,6 @@ def install_textual():
 @task
 def install_numerical():
     'Install numerical packages'
-    # def customize_freetype(repository_path):
-        # run('bash autogen.sh')
-    # install_library('http://download.savannah.gnu.org/releases/freetype/freetype-2.5.3.tar.gz', 'freetype', customize=customize_freetype, globally=True)
     sudo('yum -y install hdf5 hdf5-devel')
     sudo('yum -y install GraphicsMagick libjpeg-devel libpng-devel')
     sudo('yum -y install blas-devel lapack-devel')
@@ -262,10 +260,10 @@ def install_spatial():
         if not exists(fileName):
             run('wget http://download.osgeo.org/proj/%s' % fileName)
             run('unzip -o -d %s %s' % (os.path.join(repository_path, 'nad'), fileName))
-    install_library('http://download.osgeo.org/proj/proj-4.8.0.tar.gz', 'proj', yum_install='expat-devel', customize=customize_proj, globally=True)
+    install_library('http://download.osgeo.org/proj/proj-4.9.1.tar.gz', 'proj', yum_install='expat-devel', customize=customize_proj, globally=True)
     install_library('http://download.osgeo.org/geos/geos-3.4.2.tar.bz2', 'geos', yum_install='autoconf automake libtool', configure='--enable-python', globally=True)
-    install_library('http://download.osgeo.org/gdal/1.11.1/gdal-1.11.1.tar.gz', 'gdal', configure='--with-expat=%(path)s --with-python', globally=True)
-    install_library('http://download.osgeo.org/libspatialindex/spatialindex-src-1.8.1.tar.gz', 'spatialindex', globally=True)
+    install_library('http://download.osgeo.org/gdal/1.11.2/gdal-1.11.2.tar.gz', 'gdal', configure='--with-expat=%(path)s --with-python', globally=True)
+    install_library('http://download.osgeo.org/libspatialindex/spatialindex-src-1.8.5.tar.gz', 'spatialindex', globally=True)
     sudo('chown %s %s/lib/python2.7/site-packages/easy-install.pth' % (env.user, v.path))
     sudo('chgrp %s %s/lib/python2.7/site-packages/easy-install.pth' % (env.user, v.path))
     install_package('https://github.com/Toblerity/Shapely.git', 'shapely')
@@ -278,7 +276,7 @@ def install_spatial():
 @task
 def install_node():
     'Install node.js server'
-    install_library('http://nodejs.org/dist/v0.12.0/node-v0.12.0.tar.gz', 'node', yum_install='openssl-devel')
+    install_library('http://nodejs.org/dist/v0.12.3/node-v0.12.3.tar.gz', 'node', yum_install='openssl-devel')
     with virtualenv():
         run('npm install -g commander expresso http-proxy node-inspector requirejs should socket.io uglify-js')
     run('rm -Rf tmp')
