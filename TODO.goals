@@ -1,7 +1,4 @@
-Add rackspace notes
-    Create user
-    Add user to sudoers
-    Change user's password
-    Change root's password
-    Create ssh key
-_ Add pycrytopp
+Write web.yml
+Write numerical.yml
+Write computational.yml
+Write spatial.yml

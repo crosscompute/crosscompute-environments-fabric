@@ -1,0 +1,43 @@
+---
+- name: install base packages 
+  hosts: all
+  vars:
+    - virtualenv: ~/.virtualenvs/crosscompute
+  tasks:
+    - name: install dnf packages
+      dnf: name={{item}} state=latest
+      sudo: true
+      with_items:
+        - aiksaurus
+        - gcc
+        - gcc-c++
+        - git
+        - make
+        - nautilus-open-terminal
+        - python-virtualenv
+        - swig
+        - tar
+        - tmux
+        - vim-X11
+        - vim-enhanced
+        - wget
+        - unzip
+    - name: update dnf packages
+      dnf: name=* state=latest
+    - name: install python packages
+      pip: name={{item}} state=latest virtualenv={{virtualenv}}
+      with_items:
+        - flake8
+        - jedi
+        - pytest
+        - pytest-cov
+    - name: clone scripts
+      git:
+        repo: git://github.com/invisibleroads/scripts.git
+        dest: "{{virtualenv}}/opt/scripts"
+        update: yes
+    - name: setup scripts
+      command: "{{virtualenv}}/opt/scripts/setup.sh"
+      args:
+        chdir: "{{virtualenv}}/opt/scripts"
+      changed_when: False
