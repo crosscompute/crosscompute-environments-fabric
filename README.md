@@ -1,5 +1,7 @@
 CrossCompute Environments via Fabric
 ====================================
+(This repository is no longer maintained. Please check [crosscompute-environments-ansible](https://github.com/invisibleroads/crosscompute-environments-ansible) for updated configuration instructions.)
+
 Here are [Fabric](http://docs.fabfile.org) scripts for preparing a scientific computing environment in [Fedora](http://fedoraproject.org).
 
     su
