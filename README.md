@@ -1,6 +1,6 @@
-CrossCompute Scripts
-====================
-Here are [fabric](http://docs.fabfile.org) scripts for preparing a scientific computing environment in [Fedora](http://fedoraproject.org).
+CrossCompute Environments via Fabric
+====================================
+Here are [Fabric](http://docs.fabfile.org) scripts for preparing a scientific computing environment in [Fedora](http://fedoraproject.org).
 
     su
         useradd cc
@@ -11,9 +11,9 @@ Here are [fabric](http://docs.fabfile.org) scripts for preparing a scientific co
         yum -y install git
     su cc
         cd
-        git clone https://github.com/invisibleroads/crosscompute-environments.git
-        cd crosscompute-environments
-        bash fabfile.sh | tee crosscompute-environments.log
+        git clone https://github.com/invisibleroads/crosscompute-environments-fabric.git
+        cd crosscompute-environments-fabric
+        bash fabfile.sh | tee crosscompute-environments-fabric.log
 
 
 Prepare AMI
@@ -24,15 +24,15 @@ AMI stands for Amazon Machine Image.
 
 Prepare host.
 
-    CC_SCRIPTS=~/Documents/crosscompute-environments
-    git clone https://github.com/invisibleroads/crosscompute-environments.git $CC_SCRIPTS
+    CC_SCRIPTS=~/Documents/crosscompute-environments-fabric
+    git clone https://github.com/invisibleroads/crosscompute-environments-fabric.git $CC_SCRIPTS
     cd $CC_SCRIPTS
     bash fabfile.sh install_base install_ipython
 
 Use Fedora AMI.
 
     # Go to https://fedoraproject.org/wiki/Cloud_images
-    # Use us-east-1 x86_64 EBS-backed ami-2ea50247 
+    # Use us-east-1 x86_64 EBS-backed ami-2ea50247
     # Go to https://console.aws.amazon.com/ec2
     # Search for ami-2ea50247 in Images > AMIs
     # Launch High-CPU Medium instance with open ports 22 and 443
@@ -41,7 +41,7 @@ Prepare Server CrossCompute AMI.
 
     AMI_URI=ec2-user@ec2-YOUR-INSTANCE.compute-XXX.amazonaws.com
     AMI_CERTIFICATE=~/.ssh/YOUR-CERTIFICATE.pem
-    CC_SCRIPTS=~/Documents/crosscompute-environments
+    CC_SCRIPTS=~/Documents/crosscompute-environments-fabric
 
     # Load SSH certificate
     chmod 400 $AMI_CERTIFICATE
